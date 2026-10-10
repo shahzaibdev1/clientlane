@@ -29,6 +29,13 @@ async function tick() {
     throw new Error(
       `Notification processing failed (${response.status}). Check the application and email configuration.`,
     );
+  const result = await response.json();
+  if (result.ok !== true)
+    throw new Error('Notification processing returned an unsuccessful result.');
+  if (typeof result.data?.errors === 'number' && result.data.errors > 0)
+    throw new Error(
+      `${result.data.errors} email attempts failed. Check email delivery in workspace settings.`,
+    );
   console.log('Notification queue checked.');
 }
 try {

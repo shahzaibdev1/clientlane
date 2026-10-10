@@ -3,9 +3,11 @@
 The user authorizes immediate execution, all previously discussed workflows, Next.js + Supabase, extensive tests, readable polished UI, SEO and marketability. No payment processing, provider setup, publishing or external outreach. Design/plan confirmation is waived by the user's explicit instruction to build now.
 
 ## Product
+
 Clientlane (working name; trademark/domain availability not established) helps independent web/design freelancers and small agencies run multiple client projects. Owner dashboard and a radically simple client portal. No claims of being market-leading or measured time savings without evidence.
 
 ## Complete workflow
+
 - Account signup, confirmation, login, logout, recovery/password reset. Protected server-rendered app, Supabase sessions refreshed. Local confirmation off only for development; hosted requires SMTP, confirmation, rate limits/CAPTCHA configuration.
 - Workspace brand name/color/logo URL, freelancer or optional collaborators. One owner workspace; invitation by email, authenticated contractor accepts, project-scoped access, internal notes never visible to clients. Owner can revoke.
 - Clients: name/email/company; projects: title/client/description/due date/status/assignee/revision allowance. Projects CRUD, archive/unarchive; retain records and explicit deletion confirmation. Search, filter, populated sample demo separated from real account.
@@ -20,7 +22,9 @@ Clientlane (working name; trademark/domain availability not established) helps i
 - Accessibility: semantic buttons/forms/labels, keyboard dialogs/focus, visible focus, errors and success feedback, contrast, responsive mobile layouts. No horizontal scrolling at375px. Loading/error/empty states. Never expose backend/debug jargon in user-facing flow.
 
 ## Architecture & limits
+
 Next16 App Router React TypeScript; Supabase Postgres/Auth/Storage. State aggregates in workspace JSONB with optimistic version for domain transactions; dedicated member, project-access and portal-grant/outbox tables for access control/notifications. Mutations server-only through validated commands. Critical DB RPC permissions revoke direct writes, row-level ownership checks; atomic compare-and-save. Clients limited to projected public data and narrow commands under hashed grants. Service-role used on server only for authorized portal operations/storage/email jobs after explicit checks; never in client bundle. Contractor memberships constrained to assigned project scopes and public-to-team data. Max200 clients,500 projects,200 requests/project,100 deliveries/project,50 versions/delivery,200 comments/version,500 events/project, state10MB. Reject rather than silently truncate. UTC date-only deadlines; safe currency formatting, USD/EUR/GBP/PKR/CAD/AUD. File content is opaque, never interpreted; external integrations through HTTPS links rather than claiming sync. No accounting/video editing/native apps/AI/social publishing/live marketplace integration; portal supplements existing marketplace processes, not moving payments.
 
 ## Validation
+
 Test-first domain transitions and validation. Real local Supabase integration verifies owner isolation, memberships, optimistic races, grant expiry/revocation, client action limits, private file access, and email jobs. Chromium production browser verifies real signup/login/recovery/persistence, demo and owner-client workflow, CSV/template creation, access invitations, token rotation, upload/download, mobile, keyboard, axe, SEO routes. Fresh independent code review and fixes. Record exact tests and hosted dependencies honestly; no public deployment implied.

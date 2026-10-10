@@ -25,12 +25,14 @@ async function runWorker(base: string, secret: string) {
     child.on('close', (code) => resolve({ code, output }));
   });
 }
-async function listen(status: number) {
+async function listen(status: number, errors = 0) {
   const requests: { method?: string; url?: string; authorization?: string }[] = [];
   const server = createServer((req, res) => {
     requests.push({ method: req.method, url: req.url, authorization: req.headers.authorization });
     res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: status === 200 }));
+    res.end(
+      JSON.stringify({ ok: status === 200, data: { queued: 0, sent: 0, errors, cancelled: 0 } }),
+    );
   });
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -59,6 +61,13 @@ test('notification worker refuses an unencrypted remote destination', async () =
   const result = await runWorker('http://remote.invalid', 'long-enough-secret-for-test-only-32');
   expect(result.code).toBe(1);
   expect(result.output).toContain('HTTPS');
+});
+test('notification worker surfaces failed emails even when job processing returns HTTP success', async () => {
+  const { base } = await listen(200, 2);
+  const result = await runWorker(base, 'email-failure-test-private-secret-32');
+  expect(result.code).toBe(1);
+  expect(result.output).toContain('2 email attempts failed');
+  expect(result.output).not.toContain('email-failure-test-private-secret-32');
 });
 test('continuous worker recovers when the app is unavailable during its first check', async () => {
   let count = 0;

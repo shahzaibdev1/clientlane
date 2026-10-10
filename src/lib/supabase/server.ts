@@ -3,12 +3,14 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { Backend } from '../backend/service';
+import { authCookieOptions } from '../auth/cookies';
 export async function createServerSupabase() {
   const jar = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: authCookieOptions(process.env.NEXT_PUBLIC_APP_URL),
       cookies: {
         getAll() {
           return jar.getAll();

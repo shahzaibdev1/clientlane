@@ -6,3 +6,4 @@ test-results
 playwright-report
 supabase/.temp
 package-lock.json
+*.toml

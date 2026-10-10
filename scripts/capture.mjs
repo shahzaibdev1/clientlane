@@ -1,0 +1,12 @@
+import { chromium } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+await mkdir('docs/screenshots',{recursive:true});
+const browser=await chromium.launch();
+const page=await browser.newPage({viewport:{width:1440,height:1050}});
+await page.goto('http://127.0.0.1:3001');
+await page.screenshot({path:'docs/screenshots/marketing.png',fullPage:true});
+await page.setViewportSize({width:375,height:812});
+await page.screenshot({path:'docs/screenshots/marketing-mobile.png',fullPage:true});
+await page.goto('http://127.0.0.1:3001/tools/revision-tracker');
+await page.screenshot({path:'docs/screenshots/revision-tool-mobile.png',fullPage:true});
+await browser.close();

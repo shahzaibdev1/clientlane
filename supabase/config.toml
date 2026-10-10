@@ -11,9 +11,11 @@ shadow_port = 55320
 major_version = 17
 [studio]
 enabled = false
-[inbucket]
+[local_smtp]
 enabled = true
 port = 55324
+smtp_port = 55325
+pop3_port = 55326
 [storage]
 enabled = true
 file_size_limit = "20MiB"

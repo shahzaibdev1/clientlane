@@ -3,6 +3,23 @@ import { check, dbError } from './service';
 import { randomUUID } from 'node:crypto';
 import { fileRefSchema, portalProject, type Project, type FileRef } from '../domain';
 const bucket = 'clientlane-private';
+const extensions: Record<string, readonly string[]> = {
+  'image/png': ['png'],
+  'image/jpeg': ['jpg', 'jpeg'],
+  'image/webp': ['webp'],
+  'image/gif': ['gif'],
+  'application/pdf': ['pdf'],
+  'text/plain': ['txt', 'md', 'log'],
+  'text/csv': ['csv'],
+  'application/zip': ['zip'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx'],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
+  'audio/mpeg': ['mp3'],
+  'audio/wav': ['wav'],
+  'video/mp4': ['mp4'],
+  'video/webm': ['webm'],
+};
 export async function readUpload(request: Request) {
   const limit = 21 * 1024 * 1024;
   check(
@@ -42,14 +59,21 @@ function references(project: Pick<Project, 'requests' | 'deliveries'>): FileRef[
     ...project.deliveries.flatMap((d) => d.versions.flatMap((v) => v.files)),
   ];
 }
-function validContent(type: string, bytes: Buffer) {
+export function validContent(type: string, bytes: Buffer) {
   const head = bytes.subarray(0, 64),
     ascii = head.toString('ascii');
   if (type === 'text/plain' || type === 'text/csv') {
-    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    let text: string;
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+      return false;
+    }
     return (
       !text.includes(String.fromCharCode(0)) &&
-      !/^\s*(?:<!doctype html|<html|<svg|<script)/i.test(text)
+      !/<(?:\?xml\b|!doctype\b|(?:html|head|body|svg|script|iframe|object|embed|link|meta|style|form)\b)/i.test(
+        text,
+      )
     );
   }
   if (type === 'image/png')
@@ -84,6 +108,10 @@ export class Files {
     return { row: await this.backend.row(view.state.workspaceId), grant: null };
   }
   async upload(actor: FileActor, projectId: string, file: File) {
+    const suffix = /\.([A-Za-z0-9]+)$/
+      .exec(file.name.trim().replace(/[ .]+$/g, ''))?.[1]
+      .toLowerCase();
+    check(suffix && extensions[file.type]?.includes(suffix), 'Unsupported file name or type.');
     check(
       !/\.(html?|svg|js|mjs|exe|com|bat|cmd|ps1|scr|msi|vbs|sh|bash|zsh|fish|py|rb|pl|php|jar|class|dll|lnk|url|hta|reg|cpl|app|dmg|iso|wsf|wsh|vb|vbe|jse|jsx|tsx)$/i.test(
         file.name.trim().replace(/[ .]+$/g, ''),

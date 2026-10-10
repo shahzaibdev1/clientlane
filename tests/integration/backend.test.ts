@@ -15,6 +15,12 @@ const backend = new Backend(admin);
 const files = new Files(backend),
   mail = new Mail(backend);
 const users: string[] = [];
+const fixturePaths: string[] = [];
+async function uploadFixture(...args: Parameters<Files['upload']>) {
+  const ref = await files.upload(...args);
+  fixturePaths.push(ref.path);
+  return ref;
+}
 let owner: string, outsider: string, member: string, workspaceId: string;
 async function account() {
   const email = `backend-${randomUUID()}@example.test`;
@@ -33,6 +39,14 @@ beforeAll(async () => {
   member = (await account()).id;
 });
 afterAll(async () => {
+  if (fixturePaths.length) {
+    const removed = await admin.storage.from('clientlane-private').remove(fixturePaths);
+    if (removed.error) throw removed.error;
+    for (const path of fixturePaths) {
+      const missing = await admin.storage.from('clientlane-private').download(path);
+      expect(missing.error).not.toBeNull();
+    }
+  }
   for (const id of users) await admin.auth.admin.deleteUser(id);
 });
 describe('real database authorization and persistence', () => {
@@ -183,7 +197,7 @@ describe('real database authorization and persistence', () => {
     await expect(backend.loadPortal(grant.token)).rejects.toThrow(/expired|revoked/i);
   });
   test('file bytes roundtrip privately, unsupported content and forged references fail', async () => {
-    const uploaded = await files.upload(
+    const uploaded = await uploadFixture(
       { userId: owner, workspaceId },
       'project-a',
       new File(['hello private'], 'note.txt', { type: 'text/plain' }),
@@ -193,7 +207,7 @@ describe('real database authorization and persistence', () => {
     );
     await expect(files.download({ userId: outsider }, uploaded.path)).rejects.toThrow(/access/i);
     await expect(
-      files.upload(
+      uploadFixture(
         { userId: owner, workspaceId },
         'project-a',
         new File(['<script>alert(1)</script>'], 'fake.png', { type: 'image/png' }),
@@ -518,7 +532,7 @@ describe('real database authorization and persistence', () => {
   });
   test('script filenames cannot bypass upload policy with a plain text MIME', async () => {
     await expect(
-      files.upload(
+      uploadFixture(
         { userId: owner, workspaceId },
         'project-a',
         new File(['echo dangerous'], 'run.sh', { type: 'text/plain' }),
@@ -527,14 +541,14 @@ describe('real database authorization and persistence', () => {
   });
   test('trailing whitespace cannot hide an executable extension', async () => {
     await expect(
-      files.upload(
+      uploadFixture(
         { userId: owner, workspaceId },
         'project-a',
         new File(['echo dangerous'], 'run.sh ', { type: 'text/plain' }),
       ),
     ).rejects.toThrow(/file.*name|unsupported/i);
     await expect(
-      files.upload(
+      uploadFixture(
         { userId: owner, workspaceId },
         'project-a',
         new File(['fake executable'], 'run.exe.', { type: 'text/plain' }),
@@ -673,7 +687,14 @@ describe('real database authorization and persistence', () => {
     });
     await admin
       .from('mail_queue')
-      .update({ error: 'Email accepted; schedule transaction conflicted' })
+      .update({
+        error: null,
+        payload: {
+          ...job.payload,
+          advancePending: true,
+          reminder: { enabled: true, intervalDays: 2, nextDueDate: '2020-01-01' },
+        },
+      })
       .eq('id', job.id);
     expect((await mail.run()).sent).toBe(0);
     expect(
@@ -681,6 +702,61 @@ describe('real database authorization and persistence', () => {
         .find((p) => p.id === 'project-a')!
         .requests.find((r) => r.id === 'repair-request')!.reminder!.nextDueDate,
     ).not.toBe('2020-01-01');
+  });
+  test('a crash repair does not advance a newly edited reminder schedule', async () => {
+    const current = await backend.loadWorkspace(owner);
+    await backend.mutateWorkspace(owner, {
+      workspaceId,
+      version: current.version,
+      command: {
+        type: 'request.update',
+        projectId: 'project-a',
+        requestId: 'repair-request',
+        reminder: { enabled: true, intervalDays: 7, nextDueDate: '2021-01-01' },
+      },
+    });
+    const jobs = await admin
+      .from('mail_queue')
+      .select('id,payload')
+      .eq('workspace_id', workspaceId)
+      .eq('kind', 'reminder');
+    const job = jobs.data!.find((j) => j.payload.requestId === 'repair-request')!;
+    await admin
+      .from('mail_queue')
+      .update({
+        status: 'sent',
+        error: 'Schedule advancement pending',
+        payload: {
+          ...job.payload,
+          advancePending: true,
+          reminder: { enabled: true, intervalDays: 2, nextDueDate: '2020-01-01' },
+        },
+      })
+      .eq('id', job.id);
+    expect((await mail.run()).sent).toBe(0);
+    expect(
+      (await backend.row(workspaceId)).state.projects
+        .find((p) => p.id === 'project-a')!
+        .requests.find((r) => r.id === 'repair-request')!.reminder,
+    ).toEqual({ enabled: true, intervalDays: 7, nextDueDate: '2021-01-01' });
+  });
+  test('uploads reject XHTML, hidden HTML and mismatched filename MIME', async () => {
+    for (const [name, type, body] of [
+      [
+        'page.xhtml',
+        'text/plain',
+        '<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml"><script>alert(1)</script></html>',
+      ],
+      ['notes.txt', 'text/plain', '<!-- introduction --><html><script>alert(1)</script></html>'],
+      ['not-a-picture.png', 'text/plain', 'ordinary text'],
+    ])
+      await expect(
+        uploadFixture(
+          { userId: owner, workspaceId },
+          'project-a',
+          new File([body], name, { type }),
+        ),
+      ).rejects.toThrow(/Unsupported|content|type/i);
   });
   test('only the workspace owner can retry an exhausted email queue record', async () => {
     const queued = await mail.sendPortalInvite(owner, workspaceId, 'project-a');

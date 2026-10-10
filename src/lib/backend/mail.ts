@@ -2,6 +2,7 @@ import type { Backend } from './service';
 import { check, dbError } from './service';
 import { decryptToken, encryptToken, hashToken, newToken } from './crypto';
 import { addDays, reminderEligible, weeklyDigest } from '../domain';
+import type { ReminderSchedule } from '../domain';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 type Queue = {
@@ -16,9 +17,23 @@ type Queue = {
     date?: string;
     clientId?: string;
     grantIds?: string[];
+    reminder?: ReminderSchedule;
+    advancePending?: boolean;
   };
   attempts: number;
 };
+function sameSchedule(
+  current: ReminderSchedule | null | undefined,
+  expected: ReminderSchedule | undefined,
+) {
+  return (
+    !!current &&
+    !!expected &&
+    current.enabled === expected.enabled &&
+    current.intervalDays === expected.intervalDays &&
+    current.nextDueDate === expected.nextDueDate
+  );
+}
 function transport() {
   check(
     process.env.SMTP_HOST && process.env.SMTP_FROM,
@@ -150,9 +165,15 @@ export class Mail {
           if (reminderEligible(project, request, date, true)) {
             await this.queue(
               w.id,
-              `reminder:${w.id}:${project.id}:${request.id}:${request.reminder!.nextDueDate}:${grant.id}`,
+              `reminder:${w.id}:${project.id}:${request.id}:${request.reminder!.nextDueDate}:${request.reminder!.intervalDays}:${grant.id}`,
               'reminder',
-              { grantId: grant.id, projectId: project.id, requestId: request.id, date },
+              {
+                grantId: grant.id,
+                projectId: project.id,
+                requestId: request.id,
+                date,
+                reminder: { ...request.reminder! },
+              },
             );
             queued++;
           }
@@ -228,6 +249,7 @@ export class Mail {
       const request = project.requests.find((r) => r.id === job.payload.requestId);
       if (
         !request ||
+        !sameSchedule(request.reminder, job.payload.reminder) ||
         !reminderEligible(project, request, new Date().toISOString().slice(0, 10), true)
       )
         return null;
@@ -253,6 +275,7 @@ export class Mail {
         request = project?.requests.find((r) => r.id === job.payload.requestId);
       if (
         !request?.reminder ||
+        !sameSchedule(request.reminder, job.payload.reminder) ||
         !project ||
         !reminderEligible(project, request, new Date().toISOString().slice(0, 10), true)
       )
@@ -278,11 +301,12 @@ export class Mail {
     }
   }
   async run() {
+    const counts = { sent: 0, errors: 0, cancelled: 0 };
     const repairs = await this.backend.db
       .from('mail_queue')
       .select('*')
       .eq('status', 'sent')
-      .not('error', 'is', null)
+      .contains('payload', { advancePending: true })
       .limit(100);
     dbError(repairs.error);
     for (const job of (repairs.data ?? []) as Queue[]) {
@@ -290,17 +314,17 @@ export class Mail {
         await this.advance(job);
         const repaired = await this.backend.db
           .from('mail_queue')
-          .update({ error: null })
+          .update({ error: null, payload: { ...job.payload, advancePending: false } })
           .eq('id', job.id)
           .eq('status', 'sent');
         dbError(repaired.error);
       } catch {
+        counts.errors++;
         /* Retain the sent record for schedule repair; never re-send. */
       }
     }
     const claimed = await this.backend.db.rpc('claim_mail', { p_limit: 20 });
     dbError(claimed.error);
-    const counts = { sent: 0, errors: 0, cancelled: 0 };
     for (const job of (claimed.data ?? []) as Queue[]) {
       try {
         const renewed = await this.backend.db
@@ -332,6 +356,7 @@ export class Mail {
             sent_at: new Date().toISOString(),
             lease_until: null,
             error: null,
+            payload: { ...job.payload, advancePending: job.kind === 'reminder' },
           })
           .eq('id', job.id)
           .eq('attempts', job.attempts);
@@ -340,12 +365,16 @@ export class Mail {
         // A reminder state-update failure must not re-send an already accepted email.
         try {
           await this.advance(job);
-        } catch {
-          const r = await this.backend.db
+          const advanced = await this.backend.db
             .from('mail_queue')
-            .update({ error: 'Email sent; reminder schedule update requires retry.' })
-            .eq('id', job.id);
-          dbError(r.error);
+            .update({ payload: { ...job.payload, advancePending: false }, error: null })
+            .eq('id', job.id)
+            .eq('status', 'sent');
+          dbError(advanced.error);
+        } catch {
+          counts.errors++;
+          // The durable marker survives both a process crash and diagnostic-write failure.
+          // A recorded send must never be reclassified as a retryable SMTP failure.
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Email could not be sent.';

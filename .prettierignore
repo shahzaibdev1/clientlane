@@ -7,3 +7,4 @@ playwright-report
 supabase/.temp
 package-lock.json
 *.toml
+next-env.d.ts

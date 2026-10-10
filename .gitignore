@@ -6,6 +6,7 @@ test-results/
 playwright-report/
 coverage/
 *.tsbuildinfo
+next-env.d.ts
 .runtime/
 .superpowers/
 supabase/.temp/

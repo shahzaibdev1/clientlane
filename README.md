@@ -8,6 +8,8 @@ Requirements: Node22+, Docker Desktop using Linux containers. Run `npm ci`, `npm
 
 The setup creates an isolated Supabase project on API55321/database55322. Development email confirmation is disabled locally; hosted confirmation must be enabled. Local secrets are written to ignored .env.local, never committed. Do not share this file. Service-role access is only for server-controlled operations after authorization, never for browser use.
 
+Run `npm run worker` in a second terminal for local automatic reminders and weekly updates. It checks the authenticated notification queue every 60 seconds while the app is running; local messages go to the test inbox. `node scripts/notification-worker.mjs --once` performs one check. Hosted deployment should use a durable scheduler instead of relying on a workstation process.
+
 ## Public launch prerequisites
 
 1. Create a hosted Supabase project and apply the SQL migrations; configure private Storage. Set deployment environment from .env.example. NEXT_PUBLIC_APP_URL must be the exact HTTPS public origin; register its auth callback URL.

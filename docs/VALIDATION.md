@@ -1,27 +1,41 @@
 # Clientlane validation
 
-Release verification is in progress. This document will be updated with the final production results before delivery.
+Release candidate verified on 11 October 2026. The final whole-product independent review is pending.
 
-## Verified foundation
+## Results
 
-- Domain and backend plus local notification worker: 76 unit tests passed on 2026-10-10 at 23:54 local time.
-- Real local Supabase integration: 24 tests passed on 2026-10-10 at 23:54. These exercise Auth, Postgres, private Storage, SMTP, and the test inbox rather than database or email mocks.
-- Independent domain review approved. Independent backend review found reminder recovery and disguised active-document uploads; regression tests reproduced both, fixes passed, and scoped re-review approved both fixes and fixture cleanup.
-- HTTP checks verified protected-route redirect and private cache/referrer headers, rejected unauthenticated private-file requests, and rejected missing/incorrect scheduled-job credentials.
-- Public guides and revision utility passed their focused Chromium, mobile overflow, and accessibility checks. Product destinations and private-page metadata still require the completed product UI.
-- Dependency audit reported zero vulnerabilities for the installed lockfile on 2026-10-11. Typecheck passed after the reviewed backend fixes.
+| Check                           | Observed result                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| Unit tests                      | 103 passed across seven files                                                               |
+| Real Supabase integration       | 24 passed against Auth, Postgres, private Storage and SMTP/Mailpit                          |
+| Production Chromium             | 23 passed in 1.2 minutes against the updated production build                               |
+| Formatting, lint and TypeScript | Passed                                                                                      |
+| Production build                | Next.js 16.4 build passed, including all public, private, authentication and API routes     |
+| Dependency audit                | Zero reported vulnerabilities for the installed lockfile                                    |
+| Public browser assets           | 27 assets checked; no configured raw server credential strings found                        |
+| Visual inspection               | Production marketing, dashboard, login and actual client portal inspected on desktop/mobile |
 
-## Final release checks still pending
+## Coverage
 
-- Complete owner, collaborator, and client browser workflows, including signup/recovery, persistence, uploads, invitation acceptance/revocation, templates/import, and all project controls.
-- Production build and complete production Chromium suite.
-- Full lint, formatting, and typecheck against the completed UI.
-- Actual dashboard, client portal, and mobile screenshot inspection.
-- Fresh whole-branch independent review and any required fixes.
-- Stable local application and automatic notification worker startup.
+| Area                | Verification                                                                                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accounts            | Real signup, persisted session, sign-out, recovery email, callback, password reset and subsequent sign-in; safe return destinations; HTTPS cookie configuration; native login POST fallback |
+| Client/project work | Validated commands, clients/projects, milestones, archive/restore, templates, CSV preview/import, exports, settings and high-volume overview access                                         |
+| Delivery/agreements | Immutable versions, version-specific feedback, latest approval, revision counting, exact-cents quotes, accepted deadlines and approved handover                                             |
+| Private access      | Separate owners, assigned collaborators, public projection, token expiry/rotation/revocation, actual private upload/download bytes, forbidden files and revoked access                      |
+| Email               | Real invitations, reminder/digest eligibility, leases/retries/deduplication, durable recovery after SMTP acceptance, explicit failures and authenticated jobs                               |
+| Demo                | Strict persistent state, reset, stale-tab protection, preserved drafts and corrupt-storage recovery; clearly labelled simulated email/attachments                                           |
+| Accessibility       | Axe, 375px overflow checks, labelled native dialogs, error focus, Escape/focus restoration and mobile navigation keyboard regression                                                        |
+| Public discovery    | Marketing/guides/free revision utility, copy/download content, metadata/canonicals/OpenGraph/schema, sitemap and private noindex/cache/referrer headers                                     |
 
-## Operation and boundaries
+Tests verify meaningful transitions and representative complete workflows, not every possible input or browser permutation. Independent task reviews found reminder recovery, disguised active documents, invalid creation assignments and mobile keyboard navigation; explicit regressions passed and scoped re-reviews approved the fixes. The additional native-authentication regression prevents credential queries before JavaScript handles submission. Evidence and review records are retained in `docs/verification`.
 
-The local app uses a separate Supabase project and Mailpit inbox. Test accounts and file objects are isolated fixtures; existing PricePilot data is untouched. Local email messages are captured in the test inbox. Hosted delivery requires the environment, authentication SMTP, application SMTP, scheduler, and deployment checks described in the README.
+## Operation and limits
 
-No public deployment, hosted-provider verification, payment processing, customer traction, search ranking, brand clearance, or marketplace integration is claimed. Chromium is the automated browser target; other browser engines are not yet validated. File signature and extension checks are not a malware scan. Portal links are revocable bearer access, not proof of recipient identity. SMTP delivery is at least once when an acceptance acknowledgement is ambiguous.
+Local services use a separate Supabase project and captured email inbox. Browser/storage fixtures use isolated test accounts and exact cleanup paths. Actual portal screenshots use a temporary account/grant cleaned after capture. The previous PricePilot project is preserved. Docker interruption recovery retained existing data and environment credentials.
+
+Stable local application and notification worker startup will follow the final review. Hosted launch requires Supabase, HTTPS authentication, email and durable scheduler configuration described in the README. Hosted confirmation/delivery, a remote HTTPS deployment and GitHub CI execution are not claimed as verified.
+
+No payments or public publishing were performed. Chromium is the automated browser target. Portal links grant bearer access rather than verified recipient identity. File validation is not a malware scan. SMTP acceptance can be ambiguous, so delivery is at least once. Removing a pending attachment removes the form reference rather than immediately deleting its storage object. Large workspace/project components remain a maintenance improvement; uncommon malformed input can produce detailed validation messages.
+
+Development had framework hot-reload and cancelled-navigation logging, recorded separately from product failures. The latest complete production browser run was clean. The earlier inspected production server error log was empty. An initial test-launcher terminal-color warning was removed from the final run's environment.

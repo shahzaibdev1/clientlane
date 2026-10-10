@@ -46,14 +46,14 @@ Consumes Task1 exports. Produces loadWorkspace():{state,version,role,projectIds}
 Files src/app/{app,demo,portal,login,reset}/**, src/components/{workspace,project,portal,auth,ui}/**, src/app/globals.css and layout.tsx; tests/e2e/product.spec.ts.
 Consumes actual Task1/2 interfaces (read them; do not invent). Owner Today/clients/projects/templates/settings; project requests/deliveries/feedback/agreements/notes/team, project and client CRUD/archive, requests due/reminders, file uploads, invitation emails, client portal, handover/export/import, sample loading/demo persistence reset; all actions real. Auth signup/login/recovery/logout. Premium editorial visual design warm canvas/navy/teal, clear hierarchy, friendly readable errors, no horizontal mobile scroll. Demo handles commands locally with stale state protection and clearly labelled email/file simulation.
 
-- [ ] Write browser tests first and run RED against missing UI; implement full behavior; run focused tests GREEN.
-- [ ] Fresh task review and fixes; no fake buttons.
+- [x] Write browser tests first and run RED against missing UI; implement full behavior; run focused tests GREEN.
+- [x] Fresh task review and fixes; no fake buttons.
 
 ### Task 4: Marketing, free utility, SEO and release verification
 
 Files src/app/page.tsx, features/page.tsx, guides/[slug]/page.tsx, tools/revision-tracker/page.tsx, sitemap.ts, robots.ts, opengraph-image.tsx; src/components/marketing/**; tests/e2e/marketing.spec.ts; README.md docs/VALIDATION.md .github/workflows/ci.yml.
 Consumes polished app/sample model. Public free revision tracker, original useful guides, truthful feature pages and CTA demo/signup, crawlable correct canonical/meta/schema, app routes excluded/noindex.
 
-- [ ] Write failing browser tests for utility/metadata/routes; implement public pages, test GREEN.
-- [ ] Run production build, complete unit/integration/browser suite, axe/mobile/visual checks/audit; resolve defects, record evidence and hosted SMTP/cron/domain/CAPTCHA prerequisites.
+- [x] Write failing browser tests for utility/metadata/routes; implement public pages, test GREEN.
+- [x] Run production build, complete unit/integration/browser suite, axe/mobile/visual checks/audit; resolve defects, record evidence and hosted SMTP/cron/domain/CAPTCHA prerequisites.
 - [ ] Whole-branch fresh strongest-model review, fixes/re-review, commit clean, open local app and deliver concise report.

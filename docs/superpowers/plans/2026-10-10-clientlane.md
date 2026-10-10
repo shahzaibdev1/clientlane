@@ -39,7 +39,7 @@ Consumes Task1 exports. Produces loadWorkspace():{state,version,role,projectIds}
 
 - [x] Add failing integration tests and RED for isolation/concurrency/grants/team/storage/jobs/auth routing.
 - [x] Implement database migrations/RLS/RPC/server boundaries and authenticated scheduled jobs with real local SMTP; run GREEN; commit/report.
-- [ ] Fresh read-only task review; fixes.
+- [x] Fresh read-only task review; fixes.
 
 ### Task 3: Complete product UI
 

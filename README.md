@@ -19,6 +19,8 @@ The setup creates an isolated Supabase project on API55321/database55322. Develo
 
 No public deployment, search ranking, marketplace partnership, or measured customer outcomes are implied. Project links to external tools are references, not live synchronization. Keep marketplace payments and communication within the applicable marketplace requirements.
 
+Client project links are bearer credentials: anyone who possesses an active link can act within that project. Approval records identify the named recipient associated with the link; they are not identity verification or digital signatures. Revoke a link when access should end. Internal notes stay separate from portal content.
+
 ## Verification
 
 `npm test` runs domain/unit tests. `npm run test:integration` requires local Supabase. `npm run lint`, `npm run typecheck`, and `npm run build` cover static and production compilation. `npm run test:e2e` checks Chromium workflows. Use `PLAYWRIGHT_SERVER=production` for the production browser suite after building. See docs/VALIDATION.md for the actual final evidence and limits.

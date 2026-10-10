@@ -18,6 +18,14 @@ export async function generateMetadata({
         title: guide.title,
         description: guide.description,
         alternates: { canonical: `/guides/${slug}` },
+        openGraph: {
+          title: guide.title,
+          description: guide.description,
+          type: 'article',
+          url: `/guides/${slug}`,
+          siteName: 'Clientlane',
+          images: ['/opengraph-image'],
+        },
       }
     : {};
 }

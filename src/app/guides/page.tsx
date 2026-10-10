@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   description:
     'Actionable guides to collecting client content, managing revisions, and keeping freelance projects moving.',
   alternates: { canonical: '/guides' },
+  openGraph: {
+    title: 'Practical guides for client delivery',
+    description: 'Useful workflows for onboarding, revisions, and project delivery.',
+    url: '/guides',
+    images: ['/opengraph-image'],
+  },
 };
 export default function Guides() {
   return (

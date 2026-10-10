@@ -1,0 +1,29 @@
+name: Verify Clientlane
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run setup:local
+      - run: npm run format:check
+      - run: npm run verify
+      - run: npm run test:integration
+      - run: npm run test:e2e
+        env:
+          PLAYWRIGHT_SERVER: production
+      - run: npm audit --audit-level=moderate
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failures
+          path: |
+            test-results/
+            playwright-report/

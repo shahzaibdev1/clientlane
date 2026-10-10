@@ -663,6 +663,10 @@ textarea {
   margin-left: auto;
   margin-right: auto;
 }
+.m-guide-section .m-section-heading.left {
+  margin-left: auto;
+  margin-right: auto;
+}
 .m-guide-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

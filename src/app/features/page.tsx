@@ -6,6 +6,13 @@ export const metadata: Metadata = {
   description:
     'Explore client requests, versioned deliveries, approvals, revision tracking, extra-work agreements, and freelancer project management.',
   alternates: { canonical: '/features' },
+  openGraph: {
+    title: 'Client project management features',
+    description:
+      'Client requests, deliveries, approvals, and extra-work agreements in one workspace.',
+    url: '/features',
+    images: ['/opengraph-image'],
+  },
 };
 const groups = [
   [

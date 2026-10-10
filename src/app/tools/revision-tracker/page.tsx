@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   description:
     'Track included and used revision rounds, calculate remaining allowance, and download a clear summary for your client. No signup required.',
   alternates: { canonical: '/tools/revision-tracker' },
+  openGraph: {
+    title: 'Free client revision tracker',
+    description: 'Calculate your remaining revision allowance and share a clear client summary.',
+    url: '/tools/revision-tracker',
+    images: ['/opengraph-image'],
+  },
 };
 export default function RevisionPage() {
   return (

@@ -14,4 +14,6 @@ These choices were made within the instruction to build the complete product imm
 | Prepare public marketing independently while the backend implementer worked on separate files                                                   | Make useful progress without conflicting application changes               | Extra coordination and final integration checks                                                                       |
 | Use Clientlane as a working product name                                                                                                        | Give the application a coherent identity during implementation             | Domain and trademark clearance may require renaming before launch                                                     |
 
+The overview initially shows ten items per group, with accurate totals and controls to reveal more. This keeps Today usable for freelancers managing many projects and preserves access to later upcoming work. The cost is an extra click to inspect longer lists.
+
 The local build does not collect payments or deploy publicly. Hosted authentication/email/scheduling and launch prerequisites are described in the README. The full verification record is in VALIDATION.md.

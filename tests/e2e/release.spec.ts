@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test';
 
+test('unknown pages provide a branded way back without entering search results', async ({
+  page,
+}) => {
+  const response = await page.goto('/unknown-release-test-page');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: 'This page isn’t here.' })).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await page.getByRole('link', { name: 'Go to your workspace', exact: true }).click();
+  await expect(page).toHaveURL(/\/login\?next=/);
+});
+
 test('private routes refresh sessions and prevent browser caching or referrer disclosure', async ({
   request,
 }) => {

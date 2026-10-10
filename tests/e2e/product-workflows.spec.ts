@@ -41,7 +41,16 @@ test('demo controls requests, milestones, custom templates, archive, settings an
   await page.getByRole('button', { name: 'Create milestone', exact: true }).click();
   const milestone = page.locator('.ws-milestone').filter({ hasText: 'Launch checklist' });
   await milestone.getByRole('button', { name: 'Complete', exact: true }).click();
-  await expect(milestone.getByText(/Complete/).first()).toBeVisible();
+  await expect(
+    milestone.getByRole('button', { name: 'Mark incomplete', exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Projects', exact: true }).click();
+  await page.getByRole('button', { name: 'Open Field Coffee website' }).click();
+  await expect(milestone.locator('small')).toContainText('· Complete');
+  await expect(
+    milestone.getByRole('button', { name: 'Mark incomplete', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Requests', exact: true }).click();
   await page.getByRole('button', { name: 'New request', exact: true }).click();
   await page.getByLabel('Request title').fill('Final copy');

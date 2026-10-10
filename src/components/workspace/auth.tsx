@@ -68,6 +68,7 @@ export function AuthForm({
                   : 'Sign in to pick up where you left off.'}
           </p>
           <form
+            method="post"
             onSubmit={async (e) => {
               e.preventDefault();
               setError('');

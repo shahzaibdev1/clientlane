@@ -81,6 +81,15 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
     [emails, setEmails] = useState<Emails>([]),
     [portalLink, setPortalLink] = useState<{ url: string; expiresAt: string } | null>(null);
   const errorRef = useRef('');
+  const navigationTrigger = useRef<HTMLButtonElement>(null);
+  const navigationClose = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (mobile) navigationClose.current?.focus();
+  }, [mobile]);
+  function closeNavigation() {
+    setMobile(false);
+    navigationTrigger.current?.focus();
+  }
   const live = useRef({ view, busy, corrupt, preview, selected });
   useEffect(() => {
     live.current = { view, busy, corrupt, preview, selected };
@@ -249,7 +258,7 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
     setPage(next);
     setSelected(null);
     setPreview(false);
-    setMobile(false);
+    if (mobile) closeNavigation();
     setQuery('');
     setFilter('all');
     setPortalLink(null);
@@ -286,6 +295,10 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
     openForm({
       title: p ? 'Edit project' : 'New project',
       submit: p ? 'Save project' : 'Create project',
+      description:
+        !p && owner
+          ? 'New projects start managed by the studio owner. Create the project first, invite a teammate with access to it, then assign them from Edit project.'
+          : undefined,
       fields: [
         { name: 'title', label: 'Project title', required: true, value: p?.title },
         {
@@ -327,7 +340,7 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
                 options: [
                   { value: '', label: 'Studio owner / unassigned' },
                   ...(team?.members
-                    .filter((m) => !m.revoked_at && (!p || m.project_ids.includes(p.id)))
+                    .filter((m) => p && !m.revoked_at && m.project_ids.includes(p.id))
                     .map((m) => ({ value: m.user_id, label: m.email })) ?? []),
                 ],
               },
@@ -388,7 +401,7 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
                   Number(v.revisionAllowance))
                 : Number(v.revisionAllowance),
               ...(v.templateId ? { templateId: v.templateId } : {}),
-              assigneeId: dateValue(v.assigneeId),
+              assigneeId: null,
             };
         const ok = await command(commandSchema.parse(raw));
         if (ok) {
@@ -601,7 +614,16 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
   ];
   return (
     <div className="ws-root">
-      <aside className={`ws-sidebar ${mobile ? 'open' : ''}`}>
+      <aside
+        id="workspace-navigation"
+        className={`ws-sidebar ${mobile ? 'open' : ''}`}
+        onKeyDown={(event) => {
+          if (mobile && event.key === 'Escape') {
+            event.preventDefault();
+            closeNavigation();
+          }
+        }}
+      >
         <Link className="ws-brand" href="/">
           <Layers size={27} />
           clientlane
@@ -618,7 +640,8 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
           <button
             className="ws-mobile-close ws-icon"
             aria-label="Close navigation"
-            onClick={() => setMobile(false)}
+            ref={navigationClose}
+            onClick={closeNavigation}
           >
             <X size={20} />
           </button>
@@ -706,7 +729,7 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
         <button
           className="ws-nav-backdrop"
           aria-label="Close navigation overlay"
-          onClick={() => setMobile(false)}
+          onClick={closeNavigation}
         />
       )}
       <div className="ws-body">
@@ -715,6 +738,9 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
             <button
               className="ws-mobile-menu ws-icon"
               aria-label="Open navigation"
+              aria-expanded={mobile}
+              aria-controls="workspace-navigation"
+              ref={navigationTrigger}
               onClick={() => setMobile(true)}
             >
               <Menu size={21} />

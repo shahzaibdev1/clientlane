@@ -1371,11 +1371,13 @@
 }
 @media (max-width: 680px) {
   .ws-sidebar {
+    visibility: hidden;
     transform: translateX(-100%);
     width: 255px;
     transition: transform 0.2s;
   }
   .ws-sidebar.open {
+    visibility: visible;
     transform: translateX(0);
   }
   .ws-body {

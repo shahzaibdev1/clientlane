@@ -183,6 +183,24 @@ test('team invitation confirms email and restricts selected workspace to project
     page.locator('.ws-team-row').filter({ hasText: member }).getByText('Active', { exact: true }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Projects', exact: true }).click();
+  await page.getByRole('button', { name: 'New project', exact: true }).click();
+  await expect(page.getByLabel('Assigned teammate').locator('option')).toHaveText([
+    'Studio owner / unassigned',
+  ]);
+  await expect(page.getByRole('dialog')).toContainText(
+    'Create the project first, invite a teammate with access to it, then assign them from Edit project.',
+  );
+  await page.getByLabel('Project title').fill('Owner managed launch');
+  await page.getByRole('button', { name: 'Create project', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Owner managed launch', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Edit project', exact: true }).click();
+  await expect(page.getByLabel('Assigned teammate').locator('option')).toHaveText([
+    'Studio owner / unassigned',
+  ]);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Projects', exact: true }).click();
   await page.getByRole('button', { name: 'Open Field Coffee website' }).click();
   await page.getByRole('button', { name: 'Edit project', exact: true }).click();
   await page.getByLabel('Assigned teammate').selectOption({ label: member });

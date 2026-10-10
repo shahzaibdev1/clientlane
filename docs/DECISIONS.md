@@ -18,4 +18,6 @@ The overview initially shows ten items per group, with accurate totals and contr
 
 Local setup preserves manually configured encryption keys when their dotenv representation is safe. It refuses to rewrite keys requiring escaping or variable expansion, before touching the environment file. The cost is keeping such an environment manually; generated hexadecimal keys work normally.
 
+New projects start under the owner's management. Teammates receive explicit access to that project before assignment, and edit forms offer only teammates with current access. This preserves the project's permission boundary. The cost is an extra grant step; assigning during creation would need a future atomic permission-and-creation operation.
+
 The local build does not collect payments or deploy publicly. Hosted authentication/email/scheduling and launch prerequisites are described in the README. The full verification record is in VALIDATION.md.

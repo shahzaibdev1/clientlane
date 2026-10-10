@@ -1,5 +1,10 @@
 import { expect, test } from 'vitest';
-import { canSetupLocally, localJobsSecret } from '../../scripts/local-secrets.mjs';
+import { parseEnv } from 'node:util';
+import {
+  canSetupLocally,
+  localJobsSecret,
+  localJobsSecretAssignment,
+} from '../../scripts/local-secrets.mjs';
 
 test('local setup protects hosted environments including quoted HTTPS configuration', () => {
   expect(canSetupLocally('NEXT_PUBLIC_SUPABASE_URL="https://hosted.example.test"\n')).toBe(false);
@@ -31,4 +36,31 @@ test('first local setup creates a strong key when none exists', () => {
 
 test('local setup rejects an existing invalid key without silently changing it', () => {
   expect(() => localJobsSecret('JOBS_SECRET=too-short\n')).toThrow(/existing.*secret/i);
+});
+
+test('local setup writes hash characters and surrounding spaces without changing the existing key', () => {
+  const key = ' existing-test-only-key-with-a-hash#and-space ';
+  const assignment = localJobsSecretAssignment(`JOBS_SECRET='${key}'\n`);
+  expect(parseEnv(assignment).JOBS_SECRET).toBe(key);
+});
+
+test('local setup preserves quote characters when a safe dotenv delimiter exists', () => {
+  for (const key of [
+    'existing-test-only-key-with-double-"-quote',
+    "existing-test-only-key-with-single-'-quote",
+  ]) {
+    const delimiter = key.includes("'") ? '"' : "'";
+    expect(
+      parseEnv(localJobsSecretAssignment(`JOBS_SECRET=${delimiter}${key}${delimiter}\n`))
+        .JOBS_SECRET,
+    ).toBe(key);
+  }
+});
+
+test('local setup rejects keys that cannot be safely rewritten before touching the environment', () => {
+  for (const suffix of ['\\', '$', '\'"']) {
+    const key = `existing-test-only-key-with-32-characters${suffix}`;
+    const environment = `JOBS_SECRET=\`${key}\`\n`;
+    expect(() => localJobsSecretAssignment(environment)).toThrow(/safely.*preserve/i);
+  }
 });

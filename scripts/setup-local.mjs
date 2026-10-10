@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import process from 'node:process';
 import console from 'node:console';
-import { canSetupLocally, localJobsSecret } from './local-secrets.mjs';
+import { canSetupLocally, localJobsSecretAssignment } from './local-secrets.mjs';
 function cli(args) {
   return spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['supabase', ...args], {
     encoding: 'utf8',
@@ -16,7 +16,7 @@ if (!canSetupLocally(existingEnvironment))
   throw new Error(
     'Existing environment is not a local test instance. Keep it intact and use a separate local environment file.',
   );
-const jobsSecret = localJobsSecret(existingEnvironment);
+const jobsSecretAssignment = localJobsSecretAssignment(existingEnvironment);
 console.log('Starting isolated local Supabase and email inbox.');
 const started = cli([
   'start',
@@ -35,7 +35,7 @@ const secret = data.SERVICE_ROLE_KEY ?? data.SECRET_KEY;
 if (!data.API_URL || !key || !secret) throw new Error('Local API keys unavailable.');
 writeFileSync(
   '.env.local',
-  `NEXT_PUBLIC_SUPABASE_URL=${data.API_URL}\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${key}\nNEXT_PUBLIC_APP_URL=http://127.0.0.1:3001\nSUPABASE_SERVICE_ROLE_KEY=${secret}\nSMTP_HOST=127.0.0.1\nSMTP_PORT=55325\nSMTP_FROM=Clientlane <hello@clientlane.local>\nSMTP_SECURE=false\nJOBS_SECRET=${jobsSecret}\n`,
+  `NEXT_PUBLIC_SUPABASE_URL=${data.API_URL}\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${key}\nNEXT_PUBLIC_APP_URL=http://127.0.0.1:3001\nSUPABASE_SERVICE_ROLE_KEY=${secret}\nSMTP_HOST=127.0.0.1\nSMTP_PORT=55325\nSMTP_FROM=Clientlane <hello@clientlane.local>\nSMTP_SECURE=false\n${jobsSecretAssignment}\n`,
 );
 console.log(
   'Local environment saved privately. App: http://127.0.0.1:3001. Local test inbox: http://127.0.0.1:55324.',

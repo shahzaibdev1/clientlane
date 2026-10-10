@@ -8,7 +8,7 @@ Requirements: Node22+, Docker Desktop using Linux containers. Run `npm ci`, `npm
 
 The setup creates an isolated Supabase project on API55321/database55322. Development email confirmation is disabled locally; hosted confirmation must be enabled. Local secrets are written to ignored .env.local, never committed. Do not share this file. Service-role access is only for server-controlled operations after authorization, never for browser use.
 
-Repeated local setup preserves the existing jobs/encryption key. It refuses to overwrite a hosted or malformed environment file, and refuses to silently replace an invalid existing key.
+Repeated local setup preserves the existing jobs/encryption key. It refuses to overwrite a hosted or malformed environment file, and refuses to silently replace an invalid existing key. Manually configured keys that require dotenv escaping or expansion are left intact with an error; keep the environment file rather than changing a live encryption key.
 
 Run `npm run worker` in a second terminal for local automatic reminders and weekly updates. It checks the authenticated notification queue every 60 seconds while the app is running; local messages go to the test inbox. `node scripts/notification-worker.mjs --once` performs one check. Hosted deployment should use a durable scheduler instead of relying on a workstation process.
 

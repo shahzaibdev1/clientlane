@@ -29,3 +29,14 @@ export function localJobsSecret(existingEnvironment) {
   }
   return randomBytes(32).toString('hex');
 }
+
+export function localJobsSecretAssignment(existingEnvironment) {
+  const secret = localJobsSecret(existingEnvironment);
+  const delimiter = !secret.includes("'") ? "'" : !secret.includes('"') ? '"' : null;
+  // Fail before overwriting when dotenv escaping or expansion could alter the key.
+  if (!delimiter || /[\\$\r\n]/.test(secret))
+    throw new Error(
+      'Cannot safely preserve the existing jobs secret. Keep the environment file intact.',
+    );
+  return `JOBS_SECRET=${delimiter}${secret}${delimiter}`;
+}

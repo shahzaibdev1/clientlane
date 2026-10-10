@@ -19,7 +19,11 @@ test('private routes refresh sessions and prevent browser caching or referrer di
 test('scheduled email endpoint rejects missing and incorrect secrets over real HTTP', async ({
   request,
 }) => {
-  for (const headers of [{}, { Authorization: 'Bearer incorrect-release-test-secret' }]) {
+  const credentialHeaders: Record<string, string>[] = [
+    {},
+    { Authorization: 'Bearer incorrect-release-test-secret' },
+  ];
+  for (const headers of credentialHeaders) {
     const response = await request.post('/api/jobs', { headers });
     expect(response.status()).toBe(401);
     expect(await response.json()).toEqual({ ok: false, error: 'Unauthorized' });

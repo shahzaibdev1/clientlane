@@ -19,7 +19,14 @@ test('private routes refresh sessions and prevent browser caching or referrer di
   const destination = new URL(protectedPage.headers().location, protectedPage.url());
   expect(destination.pathname).toBe('/login');
   expect(destination.searchParams.get('next')).toBe('/app');
-  for (const route of ['/login', '/reset', '/portal/invalid-release-test-token']) {
+  for (const route of [
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset',
+    '/demo',
+    '/portal/invalid-release-test-token',
+  ]) {
     const response = await request.get(route);
     expect(response.headers()['cache-control']).toContain('no-store');
     expect(response.headers()['referrer-policy']).toBe('no-referrer');

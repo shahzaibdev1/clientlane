@@ -1,0 +1,8 @@
+.next
+node_modules
+.runtime
+.superpowers
+test-results
+playwright-report
+supabase/.temp
+package-lock.json

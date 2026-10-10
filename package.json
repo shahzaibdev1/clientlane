@@ -1,0 +1,13 @@
+{
+  "name": "clientlane", "version": "1.0.0", "private": true, "type": "module",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3001",
+    "start": "next start --hostname 127.0.0.1 --port 3001",
+    "build": "next build", "test": "vitest run", "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test", "lint": "eslint .", "typecheck": "tsc --noEmit",
+    "format": "prettier --write .", "format:check": "prettier --check .", "setup:local": "node scripts/setup-local.mjs",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {"@supabase/ssr":"latest", "@supabase/supabase-js":"latest", "lucide-react":"latest", "next":"^16.4.0", "react":"latest", "react-dom":"latest", "zod":"latest", "nodemailer":"latest"},
+  "devDependencies": {"@axe-core/playwright":"latest", "@eslint/js":"^10.0.1", "@playwright/test":"latest", "@types/node":"^22", "@types/react":"latest", "@types/react-dom":"latest", "@types/nodemailer":"latest", "eslint":"^10.12.0", "eslint-plugin-react-hooks":"^7.1.1", "prettier":"^3.9.10", "supabase":"latest", "typescript":"latest", "typescript-eslint":"^8.71.1", "vitest":"latest"}
+}

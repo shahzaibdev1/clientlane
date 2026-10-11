@@ -133,6 +133,7 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
       setEmails([]);
       return;
     }
+    setTeam(null);
     let active = true;
     Promise.all([api.listMembers(state.workspaceId), api.listEmailQueue(state.workspaceId)])
       .then(([members, mail]) => {
@@ -292,6 +293,17 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
       clientForm();
       return;
     }
+    const assignees =
+      team?.members
+        .filter((m) => p && !m.revoked_at && m.project_ids.includes(p.id))
+        .map((m) => ({ value: m.user_id, label: m.email })) ?? [];
+    if (p?.assigneeId && !assignees.some((m) => m.value === p.assigneeId))
+      assignees.push({
+        value: p.assigneeId,
+        label: team
+          ? 'Current teammate (no longer available)'
+          : 'Current teammate (team unavailable)',
+      });
     openForm({
       title: p ? 'Edit project' : 'New project',
       submit: p ? 'Save project' : 'Create project',
@@ -337,12 +349,8 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
                 label: 'Assigned teammate',
                 type: 'select' as const,
                 value: p?.assigneeId ?? '',
-                options: [
-                  { value: '', label: 'Studio owner / unassigned' },
-                  ...(team?.members
-                    .filter((m) => p && !m.revoked_at && m.project_ids.includes(p.id))
-                    .map((m) => ({ value: m.user_id, label: m.email })) ?? []),
-                ],
+                disabled: !!p && !team,
+                options: [{ value: '', label: 'Studio owner / unassigned' }, ...assignees],
               },
             ]
           : []),
@@ -385,7 +393,9 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
               ...(owner
                 ? {
                     revisionAllowance: Number(v.revisionAllowance),
-                    assigneeId: dateValue(v.assigneeId),
+                    ...(v.assigneeId !== undefined && dateValue(v.assigneeId) !== p.assigneeId
+                      ? { assigneeId: dateValue(v.assigneeId) }
+                      : {}),
                   }
                 : {}),
             }
@@ -991,6 +1001,7 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
                       {
                         label: 'Ready for review',
                         value: state.projects
+                          .filter((p) => !p.archived && p.status !== 'completed')
                           .flatMap((p) => p.deliveries)
                           .filter((d) => !d.versions.at(-1)?.decision).length,
                         icon: MessageIcon,
@@ -1094,8 +1105,8 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
                         confirm(
                           'Load sample projects?',
                           state.clients.length || state.projects.length
-                            ? 'This replaces existing clients and projects. Export your workspace before continuing.'
-                            : 'Add sample clients, requests, and deliveries to explore.',
+                            ? 'This replaces existing clients and projects and removes access to them. Your settings and templates stay saved. Export your workspace before continuing.'
+                            : 'Add sample clients, requests, and deliveries to explore. Your settings and templates stay saved.',
                           async () =>
                             Boolean(
                               await external(

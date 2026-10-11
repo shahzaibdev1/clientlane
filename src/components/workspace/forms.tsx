@@ -10,6 +10,7 @@ export type Field = {
     'text' | 'email' | 'url' | 'textarea' | 'date' | 'number' | 'select' | 'checkbox' | 'color';
   value?: string | number | boolean | null;
   required?: boolean;
+  disabled?: boolean;
   options?: { value: string; label: string }[];
   min?: number;
   max?: number;
@@ -73,6 +74,7 @@ export function Input({ field }: { field: Field }) {
     id,
     name: field.name,
     required: field.required,
+    disabled: field.disabled,
     defaultValue: String(field.value ?? ''),
     min: field.min,
     max: field.max,

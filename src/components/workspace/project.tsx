@@ -309,7 +309,7 @@ export function ProjectBoard(props: ProjectProps) {
           <p className="ws-eyebrow">THE PATH FORWARD</p>
           <h3>Milestones</h3>
         </div>
-        {!client && !readOnly && (
+        {!client && !readOnly && tab !== 'Handover' && (
           <Button secondary onClick={() => milestoneForm()}>
             <Plus size={16} />
             New milestone
@@ -330,7 +330,7 @@ export function ProjectBoard(props: ProjectProps) {
               {displayDate(m.dueDate)} · {m.completed ? 'Complete' : 'Upcoming'}
             </small>
           </div>
-          {!client && !readOnly && (
+          {!client && !readOnly && tab !== 'Handover' && (
             <div className="ws-actions">
               <button
                 className="ws-text-button"
@@ -672,7 +672,7 @@ export function ProjectBoard(props: ProjectProps) {
                 )}
                 {!readOnly && (
                   <div className="ws-actions">
-                    {!client && c.status === 'requested' && (
+                    {owner && !client && c.status === 'requested' && (
                       <Button
                         onClick={() =>
                           form(

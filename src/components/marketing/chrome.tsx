@@ -18,7 +18,7 @@ export function MarketingHeader() {
         <Link className="m-login" href="/login">
           Log in
         </Link>
-        <Link className="m-button small" href="/login?mode=signup">
+        <Link className="m-button small" href="/signup">
           Start your workspace <ArrowUpRight size={15} />
         </Link>
       </div>
@@ -55,7 +55,7 @@ export function MarketingCTA() {
       </h2>
       <p>See the full workflow with sample projects, or start with your own.</p>
       <div className="m-actions">
-        <Link className="m-button lime" href="/login?mode=signup">
+        <Link className="m-button lime" href="/signup">
           Start your workspace <ArrowUpRight size={18} />
         </Link>
         <Link className="m-text-link light" href="/demo">

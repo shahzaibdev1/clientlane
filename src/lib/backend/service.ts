@@ -198,13 +198,12 @@ export class Backend {
       (!row.state.projects.length && !row.state.clients.length) || input.replace === true,
       'Confirm replacement before loading sample projects.',
     );
-    await this.save(
-      row,
-      input.version,
-      sampleState(row.id, new Date().toISOString().slice(0, 10)),
-      user,
-      null,
-    );
+    const sample = sampleState(row.id, new Date().toISOString().slice(0, 10));
+    // Replacing sample projects must never reactivate an older project capability.
+    sample.projects = sample.projects.map((project) => ({ ...project, id: randomUUID() }));
+    sample.settings = row.state.settings;
+    sample.templates = row.state.templates;
+    await this.save(row, input.version, sample, user, null);
     return this.loadWorkspace(user, row.id);
   }
   async grant(token: string): Promise<{ grant: Grant; row: Row }> {

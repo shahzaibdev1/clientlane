@@ -12,7 +12,9 @@ test('public site explains the workflow and routes visitors to usable demo and s
   await expect(page).toHaveURL(/\/demo/);
   await page.goto('/');
   await page.getByRole('link', { name: 'Start your workspace', exact: true }).first().click();
-  await expect(page).toHaveURL(/\/login\?mode=signup/);
+  await expect(page).toHaveURL(/\/signup/);
+  await expect(page.getByRole('button', { name: 'Create account', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Confirm password')).toBeVisible();
 });
 
 test('revision utility calculates remaining allowance and creates a usable summary', async ({

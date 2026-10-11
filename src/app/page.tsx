@@ -43,7 +43,7 @@ export default function Page() {
               actually approved. All in one calm workspace.
             </p>
             <div className="m-actions">
-              <Link className="m-button" href="/login?mode=signup">
+              <Link className="m-button" href="/signup">
                 Start your workspace <ArrowUpRight size={18} />
               </Link>
               <Link className="m-text-link" href="/demo">

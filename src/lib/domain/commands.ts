@@ -423,6 +423,7 @@ export function applyCommand(
       break;
     }
     case 'change.quote': {
+      ownerOnly(actor);
       check(project, 'Project was not found');
       const change = find(project.changes, command.changeId, 'Change request');
       check(
@@ -585,7 +586,7 @@ export function applyCommand(
         project = newProject(
           {
             type: 'project.create',
-            id: nextId(state.projects, 'import-project-'),
+            id: crypto.randomUUID(),
             clientId: client.id,
             title: row.title,
             description: row.description,

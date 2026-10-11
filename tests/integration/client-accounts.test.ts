@@ -456,6 +456,13 @@ test('database commit rechecks revoked capability and invitation version, client
       })
     ).error,
   ).not.toBeNull();
+  for (const rpc of ['read_client_project', 'read_client_account_invite']) {
+    const args =
+      rpc === 'read_client_project'
+        ? { p_user: f.client.id, p_workspace: f.workspaceId, p_project: f.projectId }
+        : { p_user: f.client.id, p_hash: 'unavailable' };
+    expect((await anon.rpc(rpc, args)).error?.code).toBe('42501');
+  }
 });
 test('acceptance racing owner revocation cannot restore account access, and sample replacement never transfers old relationships', async () => {
   const a = await accounts(),

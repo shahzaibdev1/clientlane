@@ -1,6 +1,6 @@
 # Clientlane validation
 
-Optional client accounts and both invitation directions were added locally on 11 October 2026. See [the implementation report](verification/client-accounts-report.md) for exact RED/GREEN evidence, authorization interfaces, screenshots and the final preview privacy correction. Its current evidence is 108 unit tests, 40 real integration tests and three focused production browser flows; the coordinator's postreview full browser gate remains pending at this implementation handoff. The historical release evidence below describes the preceding product build.
+Optional client accounts and both invitation directions were added locally on 11 October 2026. See [the implementation report](verification/client-accounts-report.md) for exact RED/GREEN evidence, authorization interfaces, screenshots and the round-one retention/privacy/signup repairs. Repair evidence is 108 unit tests, 47 real integration tests, a fresh production build and two focused signup browser regressions, following the initial three account browser flows; the coordinator's postreview full browser gate remains pending at this repair handoff. The historical release evidence below describes the preceding product build.
 
 Local product verified on 11 October 2026. Whole-product review findings were repaired; the independent scoped reviewer reported no new blocker before an account usage limit interrupted its formal report. See docs/verification/final-fix-review.md for the precise review boundary.
 

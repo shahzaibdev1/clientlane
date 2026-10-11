@@ -213,6 +213,17 @@ export class Mail {
       dbError(r.error);
       if (!r.data) return null;
       const i = r.data;
+      if (i.direction === 'provider') {
+        const identity = await this.backend.db.auth.admin.getUserById(i.sender_id);
+        if (identity.error?.status === 404) return null;
+        dbError(identity.error);
+        const sender = identity.data.user;
+        if (
+          !sender?.email_confirmed_at ||
+          sender.email?.toLowerCase() !== i.client_email.toLowerCase()
+        )
+          return null;
+      }
       const title =
         i.direction === 'client'
           ? (await this.backend.row(i.workspace_id)).state.projects.find(

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { applyCommand, commandSchema, dateSchema, portalProject } from '../domain';
+import { applyCommand, commandSchema, dateSchema, portalProject, workspaceSchema } from '../domain';
 import { encryptToken, hashToken, newToken } from './crypto';
 import { Backend, check, dbError } from './service';
 export const briefSchema = z.strictObject({
@@ -66,17 +66,20 @@ export class ClientAccounts {
     return identity;
   }
   async access(user: string, workspaceId: string, projectId: string) {
-    const result = await this.backend.db.rpc('valid_client_access', {
+    const result = await this.backend.db.rpc('read_client_project', {
       p_user: user,
       p_workspace: z.uuid().parse(workspaceId),
       p_project: z.string().min(1).max(120).parse(projectId),
     });
     dbError(result.error);
     check(result.data, 'Client project access denied.');
-    const row = await this.backend.row(workspaceId);
+    const row: Awaited<ReturnType<Backend['row']>> = {
+      ...result.data.row,
+      state: workspaceSchema.parse(result.data.row.state),
+    };
     const project = row.state.projects.find((p) => p.id === projectId);
     check(project, 'Client project access denied.');
-    return { row, project, accessId: String(result.data) };
+    return { row, project, accessId: String(result.data.accessId) };
   }
   async loadProject(user: string, workspaceId: string, projectId: string) {
     const { row, project } = await this.access(user, workspaceId, projectId);
@@ -249,18 +252,16 @@ export class ClientAccounts {
               : 'pending',
     };
   }
-  async preview(user: string, token: string) {
-    const identity = await this.identity(user),
-      i = await this.inviteRow(token);
-    check(
-      identity.email!.toLowerCase() === i.email.toLowerCase(),
-      'Sign in with the invited email.',
-    );
-    check(
-      !i.revoked_at && !i.declined_at && Date.parse(i.expires_at) > Date.now(),
-      'Invitation expired, declined or revoked.',
-    );
-    return this.summary(i);
+  async preview(user: string, token: string): Promise<AccountInvitation> {
+    await this.identity(user);
+    check(/^[A-Za-z0-9_-]{43}$/.test(token), 'Invitation expired or revoked.');
+    const result = await this.backend.db.rpc('read_client_account_invite', {
+      p_user: user,
+      p_hash: hashToken(token),
+    });
+    dbError(result.error);
+    check(result.data, 'Invitation expired, declined or revoked.');
+    return result.data as AccountInvitation;
   }
   async listInvites(user: string, workspaceId?: string, projectId?: string) {
     if (workspaceId) await this.backend.owned(user, workspaceId);

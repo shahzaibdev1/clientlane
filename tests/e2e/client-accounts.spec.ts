@@ -18,7 +18,8 @@ const db = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
   }),
   backend = new Backend(db),
   users: string[] = [],
-  paths: string[] = [];
+  paths: string[] = [],
+  signupEmails: string[] = [];
 Object.assign(process.env, env);
 const password = 'Accounts-browser-741!';
 test.setTimeout(120000);
@@ -46,6 +47,10 @@ async function axe(page: Page) {
   );
 }
 test.afterAll(async () => {
+  const all = await db.auth.admin.listUsers({ perPage: 1000 });
+  if (all.error) throw all.error;
+  for (const u of all.data.users)
+    if (signupEmails.includes(u.email ?? '') && !users.includes(u.id)) users.push(u.id);
   for (const id of users) {
     const w = await db.from('workspaces').select('id').eq('owner_id', id);
     for (const row of w.data ?? []) {
@@ -63,6 +68,81 @@ test.afterAll(async () => {
     expect((await db.from('workspaces').select('id').eq('owner_id', id)).data).toEqual([]);
   }
 });
+for (const entry of ['studio', 'client'] as const)
+  test(`signup ${entry} choice retains the actual invitation through the Auth callback without assigning a role`, async ({
+    page,
+  }) => {
+    const sender = await account(),
+      email = `account-ui-signup-${randomUUID()}@example.test`;
+    signupEmails.push(email);
+    const { ClientAccounts } = await import('../../src/lib/backend/client-accounts');
+    const a = new ClientAccounts(backend);
+    let invitation;
+    if (entry === 'studio')
+      invitation = await a.inviteProvider(sender.id, {
+        providerEmail: email,
+        clientName: 'Client',
+        title: 'Signup brief',
+        description: 'Keep invitation after choosing studio',
+        dueDate: null,
+      });
+    else {
+      let v = await backend.loadWorkspace(sender.id);
+      v = await backend.mutateWorkspace(sender.id, {
+        version: v.version,
+        command: {
+          type: 'projects.import',
+          rows: [
+            {
+              clientName: 'Signup Client',
+              clientEmail: email,
+              company: '',
+              title: 'Signup client project',
+              description: 'Keep invitation after choosing client',
+              dueDate: null,
+              revisionAllowance: 2,
+            },
+          ],
+        },
+      });
+      invitation = await a.inviteClient(sender.id, v.state.workspaceId, v.state.projects[0].id);
+    }
+    const next = new URL(invitation.url).pathname;
+    await page.goto(next);
+    await expect(page.getByText('YOUR PROJECT INVITATION AWAITS')).toBeVisible();
+    await page.getByRole('link', { name: 'Create an account', exact: true }).click();
+    await expect(page.getByText('CREATE AN ACCOUNT TO ACCEPT')).toBeVisible();
+    const choice = page.getByRole('link', {
+      name: entry === 'studio' ? 'I’m a freelancer or agency' : 'I’m a client',
+      exact: true,
+    });
+    const href = await choice.getAttribute('href');
+    expect(new URL(href!, 'http://127.0.0.1:3001').searchParams.get('next')).toBe(next);
+    await choice.click();
+    await expect(
+      page.getByText(entry === 'studio' ? 'CREATE YOUR WORKSPACE' : 'CREATE YOUR CLIENT ACCOUNT'),
+    ).toBeVisible();
+    await page.getByLabel('Email address').fill(email);
+    await page.getByLabel('Password', { exact: true }).fill(password);
+    await page.getByLabel('Confirm password').fill(password);
+    const request = page.waitForRequest(
+      (r) => r.url().includes('/auth/v1/signup') && r.method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Create account', exact: true }).click();
+    const signup = await request;
+    const callback = new URL(new URL(signup.url()).searchParams.get('redirect_to')!);
+    expect(callback.pathname).toBe('/auth/callback');
+    expect(callback.searchParams.get('next')).toBe(next);
+    await expect(page).toHaveURL(new RegExp(next));
+    await expect(
+      page.getByRole('button', { name: 'Accept invitation', exact: true }),
+    ).toBeVisible();
+    const list = await db.auth.admin.listUsers({ perPage: 1000 });
+    const created = list.data.users.find((u) => u.email === email);
+    expect(created?.email_confirmed_at).toBeTruthy();
+    expect(created?.user_metadata).not.toHaveProperty('role');
+    expect(created?.user_metadata).not.toHaveProperty('entry');
+  });
 test('provider invites confirmed client, client uploads and approves in private account view, owner revokes account only', async ({
   page,
   browser,

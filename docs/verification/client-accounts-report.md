@@ -136,3 +136,48 @@ Original production PID20528 was command-verified before stopping. The latest pr
 Implementation and scoped documentation are ready for review; this is not a claim of hosted Auth/HTTPS/SMTP deliverability, external publishing or a completed independent review.
 
 Source/evidence commit: **`7ec79da893347234abf04dfc4b3c25457efff36a`** (`feat: add optional client accounts and two-way invitations`), 35 explicitly staged scoped files. The checkout was clean after committing. Root plan/spec files were already committed by the coordinator and were not restaged. This follow-up documentation entry records the source SHA; any independent-review repairs will receive separate covering evidence.
+
+## Round-one review repairs — 11 October 2026
+
+Repair base: `42731d73bc492f0c2cce408aa44cf751ef074297`; binding findings: `client-accounts-review.md`, I1/I2/M1/M2. The following replaces the earlier split-read guarantee and server handoff details, while preserving the historical evidence above.
+
+- **I1:** new additive migration `202610110003_client_account_review.sql` changes only the optional `file_registry.client_access_id` foreign key to `ON DELETE SET NULL`. Auth deletion still deletes the capability, but submitted file metadata and bytes remain usable by the provider and an independently valid bearer. Original uploader/access IDs become null; replacement accounts with the same email receive neither access nor ownership of unattached files. Existing upload registration and submission guards are unchanged.
+- **I2:** `read_client_project(p_user uuid,p_workspace uuid,p_project text) -> jsonb|null` returns `{row,accessId}` only when capability, confirmed Auth email, current project/client identity and current client email match. `read_client_account_invite(p_user uuid,p_hash text) -> jsonb|null` returns only the `AccountInvitation` fields after checking recipient confirmation/email, invitation lifecycle, sender eligibility and accepted capability. Each is a single `STABLE` SQL statement, so authorization and all returned data share one PostgreSQL MVCC snapshot. Both functions deny public/anonymous/authenticated execution and permit only `service_role`. `ClientAccounts.access` parses the returned state; `preview` uses the sanitized RPC result directly. Neither follows an earlier eligibility result with a new workspace read. `Files.access` inherits the same snapshot for its public-reference check; the existing transactional write rechecks remain in force. A read already authorized before invalidation may return that earlier snapshot, but cannot return newly confidential data written after invalidation.
+- **M1:** pending provider-brief mail now rechecks the originating Auth user's confirmed email against the invitation's stored client email, cancelling stale jobs through the existing queue behavior. Valid briefs still send to local SMTP. No external mail was sent.
+- **M2:** signup choices preserve a validated invitation destination and use an optional validated `entry=studio|client` only for wording. Unselected invitation entry uses neutral project-invitation wording; generic signup retains `/app` or `/client` defaults. Actual signup callback destinations retain the invitation; no authorization metadata is created.
+
+### Covering RED
+
+```powershell
+npm run test:integration -- tests/integration/client-accounts-review.test.ts
+npm run test:integration -- tests/integration/client-accounts-review.test.ts -t 'queued brief'
+$env:PLAYWRIGHT_SERVER='production'
+npx playwright test tests/e2e/client-accounts.spec.ts --grep 'signup .* choice'
+```
+
+First real integration RED: **7 failed**, exit 1. Six demonstrated product failures: submitted download reported `File was not found` after Auth deletion; revoked and email-replaced account reads returned the later confidential description; pending and accepted previews returned the later confidential description; file metadata authorized a later shared reference after revocation. The seventh was initially a fixture error: Supabase Admin `email_confirm:false` does not remove existing confirmation. The fixture now clears confirmation with an exact, UUID-validated local `auth.users` update and asserts the actual Auth result. Corrected mail RED: **1 failed, 6 skipped**, exit 1, because changed-sender mail was `sent` rather than `cancelled`. Original-production signup RED: **2 failed**, exit 1; choice links replaced the actual invitation with `/app` and `/client`.
+
+The race fixture intercepts an actual Postgres eligibility response, reads its complete response body, commits real revocation/email change and a real later description/file-reference edit, then releases the original response. It fabricates neither authorization nor workspace data. The same interception supports the old split read and new atomic RPC. Final file coverage calls `Files.download`, exercising its metadata authorization before storage retrieval, rather than stopping at the metadata helper.
+
+### Additive application and GREEN
+
+```powershell
+Get-Content supabase/migrations/202610110003_client_account_review.sql -Raw |
+  docker exec -i supabase_db_clientlane psql -U postgres -d postgres -v ON_ERROR_STOP=1 --single-transaction
+npm run test:integration -- tests/integration/client-accounts-review.test.ts
+npm run test:integration -- tests/integration/client-accounts.test.ts tests/integration/client-accounts-review.test.ts tests/integration/backend.test.ts tests/integration/final-review.test.ts
+npm test
+npx eslint src/components/workspace/auth.tsx src/app/signup/page.tsx src/lib/backend/client-accounts.ts src/lib/backend/mail.ts tests/integration/client-accounts-review.test.ts tests/integration/client-accounts.test.ts tests/e2e/client-accounts.spec.ts
+npm run typecheck
+npm run build
+$env:PLAYWRIGHT_SERVER='production'
+npx playwright test tests/e2e/client-accounts.spec.ts --grep 'signup .* choice'
+```
+
+All exit 0: new migration applied in one transaction; focused **7/7** regression tests; serial affected **47/47 real integration tests in 4 files** (110.30 seconds); **108/108 unit tests in 9 files**; scoped lint; typecheck; fresh Next16.4 production build; **2/2 focused production Chromium signup tests** (19.4 seconds). The 47-test run includes the final file-download assertion and direct authenticated denial (`42501`) of both new read RPCs. Existing file/bearer retention, account commands, invitations, mail/digest/retry and prior repair coverage pass in the same affected suite.
+
+The two browser regressions create actual new accounts in both invitation directions. They assert neutral invitation wording, chosen entry wording, the actual Supabase signup request's `/auth/callback` URL and invitation `next`, immediate local confirmed-session return to the actual invitation, the Accept invitation control, and absent role/entry identity metadata. Local Auth auto-confirms signup; this does not establish hosted email-link delivery. The existing three account-browser scenarios and the full production suite remain the coordinator's postreview gate. No browser ran during a build or real integration fixture run.
+
+Scoped Prettier and `git diff --check` pass. Exact fixture cleanup removed tracked storage bytes and mail jobs, deleted Auth identities and verified workspace cascades; a final database query counted **0** remaining `account-review-` or `account-ui-` Auth fixtures. Historical migration 002, environment and root review artifacts were not edited. No database reset, secrets output, hosted publishing, external mail or subagent dispatch occurred.
+
+Fresh repair production server: **PID2576**, exec session **69526**, port3001; its Next start command was verified. Guide **PID22728**, port3012, remains intact. Worker remains stopped for isolated mail verification. Browser and database fixture slots are released to the coordinator for independent re-review and final gate. These passing checks do not claim the repairs have already received independent approval.

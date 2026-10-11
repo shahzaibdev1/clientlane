@@ -8,8 +8,9 @@ export const metadata: Metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; entry?: string }>;
 }) {
   const q = await searchParams;
-  return <AuthForm mode="signup" next={q.next} />;
+  const entry = q.entry === 'studio' || q.entry === 'client' ? q.entry : undefined;
+  return <AuthForm mode="signup" next={q.next} entry={entry} />;
 }

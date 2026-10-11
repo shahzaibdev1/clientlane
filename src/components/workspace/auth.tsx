@@ -10,10 +10,12 @@ export function AuthForm({
   mode,
   next = '/app',
   callbackError = false,
+  entry,
 }: {
   mode: 'login' | 'signup' | 'forgot' | 'reset';
   next?: string;
   callbackError?: boolean;
+  entry?: 'studio' | 'client';
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(
@@ -28,7 +30,15 @@ export function AuthForm({
     forgot: 'Let’s get you back in.',
     reset: 'A fresh start.',
   };
-  const clientEntry = safeNext(next).startsWith('/client');
+  const destination = safeNext(next);
+  const invitationEntry = /^\/(?:client|app)\/invite\/[^/?]+(?:\?|$)/.test(destination);
+  const clientEntry = entry
+    ? entry === 'client'
+    : !invitationEntry && destination.startsWith('/client');
+  const entryHref = (choice: 'studio' | 'client') =>
+    invitationEntry
+      ? `/signup?next=${encodeURIComponent(destination)}&entry=${choice}`
+      : `/signup?next=/${choice === 'studio' ? 'app' : 'client'}`;
   return (
     <div className="ws-auth">
       <header>
@@ -57,19 +67,25 @@ export function AuthForm({
         <section className="ws-auth-card">
           <p className="ws-eyebrow">
             {mode === 'signup'
-              ? clientEntry
-                ? 'CREATE YOUR CLIENT ACCOUNT'
-                : 'CREATE YOUR WORKSPACE'
-              : clientEntry
-                ? 'YOUR CLIENT PROJECTS AWAIT'
-                : 'YOUR STUDIO AWAITS'}
+              ? invitationEntry && !entry
+                ? 'CREATE AN ACCOUNT TO ACCEPT'
+                : clientEntry
+                  ? 'CREATE YOUR CLIENT ACCOUNT'
+                  : 'CREATE YOUR WORKSPACE'
+              : invitationEntry
+                ? 'YOUR PROJECT INVITATION AWAITS'
+                : clientEntry
+                  ? 'YOUR CLIENT PROJECTS AWAIT'
+                  : 'YOUR STUDIO AWAITS'}
           </p>
           <h1>{titles[mode]}</h1>
           <p className="ws-muted">
             {mode === 'signup'
-              ? clientEntry
-                ? 'Client accounts are free. Bring your existing provider or accept a project invitation.'
-                : 'Start with an empty workspace. No payment details needed.'
+              ? invitationEntry && !entry
+                ? 'Choose how you work, then create your account to review this invitation.'
+                : clientEntry
+                  ? 'Client accounts are free. Bring your existing provider or accept a project invitation.'
+                  : 'Start with an empty workspace. No payment details needed.'
               : mode === 'forgot'
                 ? 'We’ll email a secure password recovery link.'
                 : mode === 'reset'
@@ -78,8 +94,8 @@ export function AuthForm({
           </p>
           {mode === 'signup' && (
             <nav className="ws-auth-links" aria-label="Choose account entry">
-              <Link href="/signup?next=/app">I’m a freelancer or agency</Link>
-              <Link href="/signup?next=/client">I’m a client</Link>
+              <Link href={entryHref('studio')}>I’m a freelancer or agency</Link>
+              <Link href={entryHref('client')}>I’m a client</Link>
             </nav>
           )}
           <form

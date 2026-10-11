@@ -21,3 +21,7 @@ Local setup preserves manually configured encryption keys when their dotenv repr
 New projects start under the owner's management. Teammates receive explicit access to that project before assignment, and edit forms offer only teammates with current access. This preserves the project's permission boundary. The cost is an extra grant step; assigning during creation would need a future atomic permission-and-creation operation.
 
 The local build does not collect payments or deploy publicly. Hosted authentication/email/scheduling and launch prerequisites are described in the README. The full verification record is in VALIDATION.md.
+
+The product walkthrough is a silent, captioned recording of an isolated real local project, with a readable transcript and chapter guide. This explains the workflow without requiring an account. The cost is no spoken narration; captions and full-screen playback support viewing.
+
+Extra-work prices remain owner-only as specified. Collaborators may deliver assigned project work, while publishing a binding quote requires the studio owner. The cost is an owner approval step; future explicit pricing permissions could broaden this intentionally.

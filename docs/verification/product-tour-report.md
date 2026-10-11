@@ -41,3 +41,5 @@ Three fixture attempts were made. Two recorder-only checks were corrected before
 - Visually inspected decoded intro, input, feedback, revision, scope and handover frames plus desktop/mobile guide screenshots. Captions are legible at native size; guide copy directs small-screen viewers to full screen and provides readable parallel explanations/transcript.
 
 The local static server runs independently of the app and Supabase and binds to loopback. No full application suites or build were rerun for these artifact-only changes. Later product fixes can proceed without affecting playback. Regeneration should be verified again if the application's controls or terminology change.
+
+Independent artifact review approved the delivered tour with two minor improvements retained in product-tour-review.md. Captions are clear in the main scenes but briefly blurred behind open application dialogs; the chapter guide/transcript retain the explanation. Successful fixture cleanup was verified for all recording attempts. A future regeneration should make fixture cleanup independent of media-close failures.

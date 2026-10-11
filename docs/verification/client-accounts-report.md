@@ -133,4 +133,6 @@ All account/invite IDs shown in screenshots belonged to temporary fixtures and w
 
 Original production PID20528 was command-verified before stopping. The latest production build is running on port3001 as **PID27088**, exec session **48241**; it precedes the final preview privacy correction and needs the coordinator's rebuild before the frozen-source full browser gate. Port3012's guide server **PID22728** was preserved. The root coordinator owns the final independent review, postreview full production browser gate and eventual recurring worker restart. The local worker remained stopped to isolate mail fixtures.
 
-Implementation and scoped documentation are ready for review; this is not a claim of hosted Auth/HTTPS/SMTP deliverability, external publishing or a completed independent review. Source commit and any covering review fixes are recorded below after commit.
+Implementation and scoped documentation are ready for review; this is not a claim of hosted Auth/HTTPS/SMTP deliverability, external publishing or a completed independent review.
+
+Source/evidence commit: **`7ec79da893347234abf04dfc4b3c25457efff36a`** (`feat: add optional client accounts and two-way invitations`), 35 explicitly staged scoped files. The checkout was clean after committing. Root plan/spec files were already committed by the coordinator and were not restaged. This follow-up documentation entry records the source SHA; any independent-review repairs will receive separate covering evidence.

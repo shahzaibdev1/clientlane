@@ -1,0 +1,28 @@
+{
+  "workflow": {
+    "inputReceived": true,
+    "feedbackOnVersion1": 1,
+    "version1Decision": "needs_changes",
+    "latestVersion": 2,
+    "latestApproved": true,
+    "quoteAmountCents": 12550,
+    "currency": "USD",
+    "quoteAccepted": true,
+    "deadlineAccepted": true,
+    "dueDate": "2026-10-28",
+    "handoverExportDeliveries": 1,
+    "privateFileDownloadStatus": 200,
+    "paymentProcessed": false
+  },
+  "cleanup": {
+    "ownerDeleted": true,
+    "fixtureWorkspacesRemaining": 0,
+    "exactStorageFilesRemoved": 1,
+    "storageFilesVerifiedMissing": true,
+    "externalMailSent": false
+  },
+  "capturedAt": "2026-10-11T11:05:26.008Z",
+  "appOrigin": "http://127.0.0.1:3001",
+  "silentCaptioned": true,
+  "recordedSeconds": 113.025
+}

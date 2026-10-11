@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#123e36" />
+    <title>Clientlane — from client input to approved handover</title>
+    <style>
+      :root {
+        --ink: #17352e;
+        --muted: #566c63;
+        --paper: #f8f6ef;
+        --line: #d7ddd3;
+        --green: #17664f;
+        --lime: #e0eb91;
+        --radius: 22px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          17px/1.65 system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+      }
+      a {
+        color: var(--green);
+        text-underline-offset: 4px;
+      }
+      a:hover {
+        text-decoration-thickness: 2px;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      video:focus-visible {
+        outline: 3px solid #b08431;
+        outline-offset: 5px;
+      }
+      .skip {
+        position: absolute;
+        top: -100px;
+        left: 20px;
+        background: white;
+        padding: 10px;
+        z-index: 10;
+      }
+      .skip:focus {
+        top: 10px;
+      }
+      .shell {
+        width: min(1160px, calc(100% - 64px));
+        margin: auto;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        font-size: 24px;
+        font-weight: 750;
+        letter-spacing: -1px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+      .brand-symbol {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: var(--green);
+        border-radius: 7px;
+        margin-right: 10px;
+        transform: rotate(-12deg);
+        vertical-align: -2px;
+      }
+      header span {
+        font-size: 13px;
+        font-weight: 650;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.65fr 1fr;
+        gap: 70px;
+        padding: 66px 0 54px;
+        align-items: end;
+      }
+      .eyebrow {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--green);
+        margin: 0 0 16px;
+      }
+      h1 {
+        font-size: clamp(38px, 5vw, 64px);
+        line-height: 1.07;
+        letter-spacing: -2.8px;
+        font-weight: 650;
+        margin: 0 0 24px;
+        max-width: 740px;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--green);
+      }
+      .lead {
+        font-size: 20px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 650px;
+        margin: 0;
+      }
+      .hero-note {
+        border-left: 3px solid var(--green);
+        padding-left: 24px;
+      }
+      .hero-note p {
+        margin: 10px 0 0;
+        color: var(--muted);
+      }
+      .pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 750;
+        letter-spacing: 0.5px;
+        background: #e8ede1;
+        border-radius: 100px;
+        padding: 7px 12px;
+        margin: 0 6px 12px 0;
+      }
+      .watch {
+        background: #153c33;
+        color: white;
+        border-radius: var(--radius);
+        padding: 24px;
+        box-shadow: 0 18px 40px #183a2410;
+      }
+      .watch-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 4px 18px;
+        gap: 20px;
+      }
+      .watch-head h2 {
+        font-size: 22px;
+        letter-spacing: -0.4px;
+        margin: 0;
+      }
+      .watch-head span {
+        color: #c3d8c9;
+        font-size: 13px;
+      }
+      .screen {
+        background: #071a16;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 8/5;
+      }
+      video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .watch-foot {
+        font-size: 14px;
+        color: #cfdfd5;
+        margin: 16px 4px 0;
+      }
+      .watch-foot a {
+        color: #e0eb91;
+      }
+      .below {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 54px;
+        padding: 46px 0 70px;
+      }
+      .section-title {
+        font-size: 29px;
+        line-height: 1.2;
+        letter-spacing: -0.8px;
+        margin: 0 0 12px;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 24px;
+      }
+      .chapters {
+        display: grid;
+        gap: 8px;
+      }
+      .chapter {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        text-align: left;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: #fffdf8;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+      }
+      .chapter:hover {
+        border-color: var(--green);
+        background: #edf1e8;
+      }
+      .chapter[aria-current='true'] {
+        background: #e6edde;
+        border-color: var(--green);
+      }
+      .chapter time {
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--green);
+        min-width: 45px;
+      }
+      .chapter strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+      .chapter small {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--muted);
+        margin-top: 5px;
+      }
+      .context {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: #fffdf8;
+        padding: 28px;
+      }
+      .context h3 {
+        font-size: 19px;
+        margin: 0 0 10px;
+      }
+      .context p {
+        margin: 0 0 20px;
+        color: var(--muted);
+      }
+      .context p:last-child {
+        margin: 0;
+      }
+      .outcome {
+        padding: 22px 26px;
+        border-radius: 16px;
+        background: var(--lime);
+        margin-top: 18px;
+      }
+      .outcome strong {
+        font-size: 17px;
+      }
+      .outcome p {
+        margin: 6px 0 0;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .learn {
+        border-top: 1px solid var(--line);
+        padding: 55px 0 64px;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-top: 30px;
+      }
+      .step {
+        border-top: 2px solid var(--green);
+        padding-top: 16px;
+      }
+      .step .number {
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: var(--green);
+        font-weight: 800;
+      }
+      .step h3 {
+        font-size: 21px;
+        line-height: 1.3;
+        margin: 12px 0;
+      }
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .transcript {
+        padding: 30px 0;
+        border-top: 1px solid var(--line);
+      }
+      summary {
+        font-size: 21px;
+        font-weight: 650;
+        cursor: pointer;
+      }
+      .transcript-copy {
+        display: grid;
+        gap: 16px;
+        margin-top: 25px;
+        max-width: 850px;
+      }
+      .transcript-copy p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .transcript-copy h3 {
+        margin: 0;
+        font-size: 17px;
+        color: var(--ink);
+      }
+      .download-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        font-size: 14px;
+        margin-top: 25px;
+      }
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 25px;
+        flex-wrap: wrap;
+        padding: 32px 0 42px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .error {
+        color: #ffdfa1;
+        font-size: 14px;
+      }
+      @media (max-width: 750px) {
+        .shell {
+          width: calc(100% - 36px);
+        }
+        header {
+          padding: 22px 0;
+        }
+        header span {
+          font-size: 10px;
+          letter-spacing: 0.5px;
+        }
+        .brand {
+          font-size: 22px;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 28px;
+          padding: 40px 0 32px;
+        }
+        h1 {
+          font-size: 42px;
+          letter-spacing: -1.8px;
+        }
+        .lead {
+          font-size: 18px;
+        }
+        .hero-note {
+          padding-left: 18px;
+        }
+        .hero-note p {
+          font-size: 15px;
+        }
+        .watch {
+          padding: 12px;
+          border-radius: 16px;
+        }
+        .watch-head {
+          align-items: flex-start;
+          padding: 3px 2px 12px;
+          gap: 12px;
+        }
+        .watch-head h2 {
+          font-size: 18px;
+        }
+        .watch-head span {
+          font-size: 11px;
+          max-width: 95px;
+          text-align: right;
+        }
+        .screen {
+          border-radius: 7px;
+        }
+        .watch-foot {
+          font-size: 13px;
+          line-height: 1.65;
+        }
+        .below {
+          grid-template-columns: 1fr;
+          gap: 30px;
+          padding: 34px 0 42px;
+        }
+        .context {
+          padding: 22px;
+        }
+        .steps {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+        .learn {
+          padding: 38px 0;
+        }
+        .section-title {
+          font-size: 27px;
+        }
+        .chapter {
+          padding: 13px 12px;
+          gap: 14px;
+        }
+        footer {
+          font-size: 12px;
+        }
+        .download-links {
+          gap: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the walkthrough</a>
+    <div class="shell">
+      <header>
+        <a class="brand" href="#"><span class="brand-symbol" aria-hidden="true"></span>clientlane</a
+        ><span>A product walkthrough</span>
+      </header>
+      <main id="main">
+        <section class="hero" aria-labelledby="intro">
+          <div>
+            <p class="eyebrow">For freelancers & small studios</p>
+            <h1 id="intro">From “still waiting”<br />to <em>“approved.”</em></h1>
+            <p class="lead">
+              A calmer place to gather client inputs, review your work, and agree what happens next.
+              See a designer and café client complete the loop.
+            </p>
+          </div>
+          <div class="hero-note">
+            <span class="pill">REAL APPLICATION</span><span class="pill">NO SIGN-UP NEEDED</span
+            ><strong>A website for Field Coffee</strong>
+            <p>
+              Northline Studio needs launch content and a design decision. Asha needs an easy way to
+              reply, request changes, and approve the final version.
+            </p>
+          </div>
+        </section>
+        <section class="watch" aria-labelledby="watch-title">
+          <div class="watch-head">
+            <h2 id="watch-title">Watch the client delivery loop</h2>
+            <span id="runtime">Captioned · no audio</span>
+          </div>
+          <div class="screen">
+            <video
+              id="tour"
+              controls
+              playsinline
+              preload="metadata"
+              poster="handover.png"
+              aria-label="Captioned Clientlane walkthrough: freelancer and café client"
+            >
+              <source src="clientlane-tour.webm" type="video/webm" />
+              Your browser does not support WebM.
+              <a href="clientlane-tour.webm">Download the video</a>.
+            </video>
+          </div>
+          <p class="watch-foot">
+            Captions are part of the picture. Use full screen for the small controls, or read the
+            guide below. <a href="#read">Read the transcript</a>.
+          </p>
+          <p id="playback-status" role="status" class="error"></p>
+        </section>
+        <div class="below">
+          <section aria-labelledby="chapters-title">
+            <h2 id="chapters-title" class="section-title">Go to the useful bit.</h2>
+            <p class="sub">Pick a chapter to jump straight there.</p>
+            <nav id="chapters" class="chapters" aria-label="Video chapters">
+              <p>Loading chapters…</p>
+            </nav>
+          </section>
+          <div>
+            <section class="context" aria-labelledby="fit-title">
+              <h2 id="fit-title" class="section-title">Who is this for?</h2>
+              <h3>You deliver work to clients.</h3>
+              <p>
+                Freelance designers, website builders, brand studios, and small creative teams can
+                use one project space for the details that otherwise get scattered across messages.
+              </p>
+              <h3>Your client needs a clear next action.</h3>
+              <p>
+                The studio has its own workspace. The client follows a private project link to send
+                responses, review versions, make decisions, and find approved files.
+              </p>
+              <h3>Use it when decisions slow delivery.</h3>
+              <p>
+                It is especially useful when you are chasing copy or assets, handling revision
+                rounds, agreeing added scope, or preparing a final handover.
+              </p>
+            </section>
+            <aside class="outcome">
+              <strong>Agreement, with a clear record.</strong>
+              <p>
+                The $125.50 in this example is an accepted quote. Clientlane coordinates delivery
+                and records scope and date decisions. It does not collect payments; invoicing and
+                payment happen elsewhere.
+              </p>
+            </aside>
+          </div>
+        </div>
+        <section class="learn" aria-labelledby="steps-title">
+          <p class="eyebrow">What happens in the example</p>
+          <h2 id="steps-title" class="section-title">Six steps. Two people. One project.</h2>
+          <div class="steps">
+            <article class="step">
+              <span class="number">01 / GET ORIENTED</span>
+              <h3>See what is waiting.</h3>
+              <p>
+                The designer opens the dashboard, then Field Coffee’s project. Missing inputs, the
+                current deadline, and delivery decisions make the next action clear.
+              </p>
+            </article>
+            <article class="step">
+              <span class="number">02 / GATHER INPUTS</span>
+              <h3>Ask once, reply in context.</h3>
+              <p>
+                The designer requests the approved launch headline. Asha sends “Good coffee. Warm
+                company.” through her client portal; the request becomes received.
+              </p>
+            </article>
+            <article class="step">
+              <span class="number">03 / REVIEW A VERSION</span>
+              <h3>Keep feedback with the work.</h3>
+              <p>
+                Asha adds feedback on version 1, then requests a clearer opening-hours section. The
+                decision counts one revision round for that version.
+              </p>
+            </article>
+            <article class="step">
+              <span class="number">04 / REVISE & APPROVE</span>
+              <h3>Make the latest decision obvious.</h3>
+              <p>
+                The designer publishes version 2 with the requested change and a private file. Asha
+                approves it. Earlier versions keep their own feedback and decisions.
+              </p>
+            </article>
+            <article class="step">
+              <span class="number">05 / AGREE EXTRA WORK</span>
+              <h3>Settle scope before starting.</h3>
+              <p>
+                Asha asks for drink illustrations. Northline publishes a USD $125.50 quote and
+                proposes October 28. Asha accepts both; the project deadline updates.
+              </p>
+            </article>
+            <article class="step">
+              <span class="number">06 / HAND OVER</span>
+              <h3>Find the approved result.</h3>
+              <p>
+                Handover shows the latest approved delivery, its file, and an export. The
+                illustration quote is an agreement for future work; the approved homepage is the
+                work handed over.
+              </p>
+            </article>
+          </div>
+        </section>
+        <section id="read" class="transcript" aria-label="Walkthrough transcript">
+          <details>
+            <summary>Read the complete caption transcript</summary>
+            <div id="transcript-copy" class="transcript-copy">
+              <p>The downloadable transcript includes every on-screen caption.</p>
+            </div>
+          </details>
+          <div class="download-links">
+            <a href="transcript.md" download>Download transcript</a
+            ><a href="captions.vtt" download>Download caption file</a
+            ><a href="chapters.json" download>Download chapter timings</a
+            ><a href="clientlane-tour.webm" download>Download video</a>
+          </div>
+        </section>
+      </main>
+      <footer>
+        <span>A real local recording, with fictional studio and café data.</span
+        ><span>Silent by design · private fixture cleaned after capture</span>
+      </footer>
+    </div>
+    <script>
+      const video = document.querySelector('#tour'),
+        chapters = document.querySelector('#chapters'),
+        status = document.querySelector('#playback-status');
+      const clock = (value) =>
+        `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}`;
+      video.addEventListener('loadedmetadata', () => {
+        if (Number.isFinite(video.duration))
+          document.querySelector('#runtime').textContent =
+            `${clock(video.duration)} · captioned · no audio`;
+      });
+      video.addEventListener('error', () => {
+        status.textContent =
+          'The video could not load. Serve this folder with the included local helper, or download the WebM file.';
+      });
+      fetch('chapters.json')
+        .then((response) => {
+          if (!response.ok) throw new Error();
+          return response.json();
+        })
+        .then((items) => {
+          chapters.replaceChildren();
+          for (const item of items) {
+            const button = document.createElement('button'),
+              time = document.createElement('time'),
+              copy = document.createElement('span'),
+              title = document.createElement('strong'),
+              role = document.createElement('small');
+            button.className = 'chapter';
+            button.type = 'button';
+            button.dataset.start = item.start;
+            time.textContent = clock(item.start);
+            title.textContent = item.title;
+            role.textContent = item.role;
+            copy.append(title, role);
+            button.append(time, copy);
+            button.addEventListener('click', async () => {
+              video.currentTime = item.start;
+              status.textContent = `Chapter: ${item.title}`;
+              try {
+                await video.play();
+              } catch {
+                status.textContent = 'Chapter selected. Press Play to continue.';
+              }
+            });
+            chapters.append(button);
+          }
+          video.addEventListener('timeupdate', () => {
+            const active = items.findLastIndex((item) => item.start <= video.currentTime);
+            [...chapters.children].forEach((button, index) =>
+              button.setAttribute('aria-current', String(index === active)),
+            );
+          });
+        })
+        .catch(() => {
+          chapters.textContent =
+            'Chapter navigation is available when this guide is served locally. The transcript is available below.';
+        });
+      fetch('transcript.md')
+        .then((response) => response.text())
+        .then((text) => {
+          const target = document.querySelector('#transcript-copy');
+          target.replaceChildren();
+          for (const part of text.split(/\n\n+/).slice(2)) {
+            const node = document.createElement(part.startsWith('## ') ? 'h3' : 'p');
+            node.textContent = part.replace(/^## /, '').replaceAll('**', '');
+            target.append(node);
+          }
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>

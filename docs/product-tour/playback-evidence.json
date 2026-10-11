@@ -1,0 +1,50 @@
+{
+  "verifiedAt": "2026-10-11T11:09:23.695Z",
+  "durationSeconds": 114.84,
+  "nativePlaybackAdvanced": true,
+  "chapters": [
+    {
+      "chapter": "Less chasing. Clearer client decisions.",
+      "expectedSeconds": 2.002,
+      "actualSeconds": 2.0391
+    },
+    {
+      "chapter": "Ask for the content you need",
+      "expectedSeconds": 17.364,
+      "actualSeconds": 17.4251
+    },
+    {
+      "chapter": "Feedback stays with this version",
+      "expectedSeconds": 34.505,
+      "actualSeconds": 34.5354
+    },
+    {
+      "chapter": "Publish a new version",
+      "expectedSeconds": 49.354,
+      "actualSeconds": 49.3906
+    },
+    {
+      "chapter": "Make added scope explicit",
+      "expectedSeconds": 69.119,
+      "actualSeconds": 69.1471
+    },
+    {
+      "chapter": "Leave with approved work",
+      "expectedSeconds": 99.66,
+      "actualSeconds": 99.7126
+    }
+  ],
+  "mobileChapterJump": true,
+  "mobile": {
+    "width": 375,
+    "documentWidth": 375,
+    "bodyWidth": 375,
+    "smallestBodyText": 15,
+    "overflow": []
+  },
+  "videoDimensions": {
+    "width": 1440,
+    "height": 900
+  },
+  "transcriptLoaded": true
+}

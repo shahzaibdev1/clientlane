@@ -1,0 +1,38 @@
+[
+  {
+    "start": 2.002,
+    "title": "Less chasing. Clearer client decisions.",
+    "role": "FREELANCER",
+    "text": "Clientlane helps freelancers and small studios gather inputs, review versions, agree changes, and hand over approved work."
+  },
+  {
+    "start": 17.364,
+    "title": "Ask for the content you need",
+    "role": "FREELANCER",
+    "text": "Requests put instructions and deadlines in one place. Here the designer asks the café for its final launch message."
+  },
+  {
+    "start": 34.505,
+    "title": "Feedback stays with this version",
+    "role": "CAFÉ CLIENT",
+    "text": "Asha reviews Homepage design, adds feedback, and asks for a clearer opening-hours section. One revision round is counted."
+  },
+  {
+    "start": 49.354,
+    "title": "Publish a new version",
+    "role": "FREELANCER",
+    "text": "The designer makes the requested change and uploads a private handover note. Earlier feedback stays attached to version 1."
+  },
+  {
+    "start": 69.119,
+    "title": "Make added scope explicit",
+    "role": "CAFÉ CLIENT",
+    "text": "The café asks for three seasonal drink illustrations. Extra work gets its own request, quote, and client decision."
+  },
+  {
+    "start": 99.66,
+    "title": "Leave with approved work",
+    "role": "CAFÉ CLIENT",
+    "text": "Handover contains the latest approved delivery and its private file. Both sides have a clear record of what was decided."
+  }
+]

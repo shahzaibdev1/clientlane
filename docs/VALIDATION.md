@@ -2,19 +2,19 @@
 
 Optional client accounts and both invitation directions were added locally on 11 October 2026. See [the implementation report](verification/client-accounts-report.md) for exact RED/GREEN evidence, authorization interfaces, screenshots and the round-one retention/privacy/signup repairs. Repair evidence is 108 unit tests, 47 real integration tests, a fresh production build and two focused signup browser regressions, following the initial three account browser flows; the coordinator's postreview full browser gate remains pending at this repair handoff. The historical release evidence below describes the preceding product build.
 
-Local product verified on 11 October 2026. Whole-product review findings were repaired; the independent scoped reviewer reported no new blocker before an account usage limit interrupted its formal report. See docs/verification/final-fix-review.md for the precise review boundary.
+Local product, including optional client accounts and two-way invitations, verified on 11 October 2026. The new feature received a complete independent review and approved scoped repair review. The earlier whole-product repair review report was interrupted by an account usage limit; its historical boundary is retained in docs/verification/final-fix-review.md.
 
 ## Results
 
 | Check                           | Observed result                                                                             |
 | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| Unit tests                      | 106 passed across eight files                                                               |
-| Real Supabase integration       | 28 passed against Auth, Postgres, private Storage and SMTP/Mailpit                          |
-| Production Chromium             | 30 passed in 2.9 minutes against the updated production build                               |
+| Unit tests                      | 108 passed across nine files                                                                |
+| Real Supabase integration       | 47 passed against Auth, Postgres, private Storage and SMTP/Mailpit                          |
+| Production Chromium             | 35 passed in 4.3 minutes against the updated production build                               |
 | Formatting, lint and TypeScript | Passed                                                                                      |
 | Production build                | Next.js 16.4 build passed, including all public, private, authentication and API routes     |
 | Dependency audit                | Zero reported vulnerabilities for the installed lockfile                                    |
-| Public browser assets           | 27 assets checked; no configured raw server credential strings found                        |
+| Public browser assets           | 26 assets checked; no configured raw server credential strings found                        |
 | Visual inspection               | Production marketing, dashboard, login and actual client portal inspected on desktop/mobile |
 
 ## Coverage
@@ -44,4 +44,10 @@ Development had framework hot-reload and cancelled-navigation logging, recorded 
 
 Final regressions cover deleted-project identity/capability cleanup, obsolete teammate invitations, owner-only quotes, assignment preservation during unavailable team loads, real signup CTAs, settings/template preservation and read-only handover. The standalone real-application walkthrough passed playback, six chapter seeks, 375px overflow checks and focused server-range tests.
 
-Local notification worker successfully checked the actual authenticated queue and is running every 60 seconds in session 84348. The final product browser run created fresh workspace screenshots. These services are local processes; hosted scheduling remains a launch prerequisite.
+Local notification worker successfully checked the actual authenticated queue and is running every 60 seconds in session 72322. The final product browser run created fresh workspace screenshots. These services are local processes; hosted scheduling remains a launch prerequisite.
+
+## Optional client accounts release
+
+Both invitation directions, confirmed-recipient acceptance, dual-role navigation and multi-provider client dashboard are verified. Tests cover account upload/download, feedback/revisions/approval/agreements, separate bearer/account revocation, deleted/replaced project identities, old-email replacement isolation, retained submitted files after Auth deletion, atomic authorized read snapshots, stale sender mail cancellation and signup invitation return paths. All47 real integration tests passed in120.32seconds after the complete35-case production browser run. Fullformat/lint/typecheck and108unit tests passed against final repair source. New service-only RPCs deny authenticated direct execution. Local migrations002 and003 were applied additively without reset or credential changes; hosted installations require these migrations too.
+
+Independent feature review and scoped approved repair are retained in client-accounts-review.md and client-accounts-fix-review.md; exact implementation RED/GREEN is in client-accounts-report.md. Real desktop/mobile screenshots were inspected; new client browser checkpoints have zero tested axe violations and no overflow. Guide explains accounts while its video remains the valid anonymous-link workflow. Hosted confirmation email, remote HTTPS and external deliverability remain unverified launch configuration.

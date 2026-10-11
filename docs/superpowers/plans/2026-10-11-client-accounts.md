@@ -20,15 +20,15 @@ Wrong recipient and unconfirmed identities; pending/revoked/expired invitations;
 Files create src/lib/backend/client-accounts.ts, client-account-actions.ts; additive supabase/migrations SQL; focused src/components/client-account components; src/app/client routes. Narrow edits existing workspace/project/portal/auth/proxy/files/mail only where required. Tests tests/integration/client-accounts.test.ts, tests/e2e/client-accounts.spec.ts and relevant unit files.
 Interfaces consume Backend, domain client projection/commands, Files/Mail, requireUser; produce authenticated project listing/mutation/files and expiring provider-to-client/client-to-provider invitation preview/send/accept/decline/revoke methods. Author defines precise exported types in report; UI consumes these directly.
 
-- [ ] Write/run failing permission, capability lifecycle and both invitation flow tests before implementation.
-- [ ] Implement additive transactional backend; apply only new migration to existing local DB without historical migration reset.
-- [ ] Implement client dashboard, authenticated project view, invite/brief flows, role navigation and signup entry. Preserve anonymous/project provider controls.
-- [ ] Run meaningful unit/real integration/production browser tests, mobile/axe checks; inspect real screenshots and self-review.
-- [ ] Commit scoped changes and evidence report; fresh independent review then covering fixes/re-review.
+- [x] Write/run failing permission, capability lifecycle and both invitation flow tests before implementation.
+- [x] Implement additive transactional backend; apply only new migration to existing local DB without historical migration reset.
+- [x] Implement client dashboard, authenticated project view, invite/brief flows, role navigation and signup entry. Preserve anonymous/project provider controls.
+- [x] Run meaningful unit/real integration/production browser tests, mobile/axe checks; inspect real screenshots and self-review.
+- [x] Commit scoped changes and evidence report; fresh independent review then covering fixes/re-review.
 
 ### Task 2: Release verification and explanation
 
-- [ ] Run appropriate full release gate after reviewed fixes; update validation/setup documentation and walkthrough explanation for two-way accounts.
-- [ ] Preserve decisions/reviews; restart stable local app/worker, verify guide and health, commit clean and deliver concise result.
+- [x] Run appropriate full release gate after reviewed fixes; update validation/setup documentation and walkthrough explanation for two-way accounts.
+- [x] Preserve decisions/reviews; restart stable local app/worker, verify guide and health, commit clean and deliver concise result.
 
 The user explicitly said do it now after agreeing this scope; no additional design approval pause.

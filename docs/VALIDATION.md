@@ -1,14 +1,14 @@
 # Clientlane validation
 
-Release candidate verified on 11 October 2026. The final whole-product independent review is pending.
+Local product verified on 11 October 2026. Whole-product review findings were repaired; the independent scoped reviewer reported no new blocker before an account usage limit interrupted its formal report. See docs/verification/final-fix-review.md for the precise review boundary.
 
 ## Results
 
 | Check                           | Observed result                                                                             |
 | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| Unit tests                      | 103 passed across seven files                                                               |
-| Real Supabase integration       | 24 passed against Auth, Postgres, private Storage and SMTP/Mailpit                          |
-| Production Chromium             | 23 passed in 1.2 minutes against the updated production build                               |
+| Unit tests                      | 106 passed across eight files                                                               |
+| Real Supabase integration       | 28 passed against Auth, Postgres, private Storage and SMTP/Mailpit                          |
+| Production Chromium             | 30 passed in 2.9 minutes against the updated production build                               |
 | Formatting, lint and TypeScript | Passed                                                                                      |
 | Production build                | Next.js 16.4 build passed, including all public, private, authentication and API routes     |
 | Dependency audit                | Zero reported vulnerabilities for the installed lockfile                                    |
@@ -34,8 +34,12 @@ Tests verify meaningful transitions and representative complete workflows, not e
 
 Local services use a separate Supabase project and captured email inbox. Browser/storage fixtures use isolated test accounts and exact cleanup paths. Actual portal screenshots use a temporary account/grant cleaned after capture. The previous PricePilot project is preserved. Docker interruption recovery retained existing data and environment credentials.
 
-Stable local application and notification worker startup will follow the final review. Hosted launch requires Supabase, HTTPS authentication, email and durable scheduler configuration described in the README. Hosted confirmation/delivery, a remote HTTPS deployment and GitHub CI execution are not claimed as verified.
+The local application and independent captioned walkthrough are available on ports 3001 and 3012. Hosted launch requires Supabase, HTTPS authentication, email and durable scheduler configuration described in the README. Hosted confirmation/delivery, a remote HTTPS deployment and GitHub CI execution are not claimed as verified.
 
 No payments or public publishing were performed. Chromium is the automated browser target. Portal links grant bearer access rather than verified recipient identity. File validation is not a malware scan. SMTP acceptance can be ambiguous, so delivery is at least once. Removing a pending attachment removes the form reference rather than immediately deleting its storage object. Large workspace/project components remain a maintenance improvement; uncommon malformed input can produce detailed validation messages.
 
 Development had framework hot-reload and cancelled-navigation logging, recorded separately from product failures. The latest complete production browser run was clean. The earlier inspected production server error log was empty. An initial test-launcher terminal-color warning was removed from the final run's environment.
+
+Final regressions cover deleted-project identity/capability cleanup, obsolete teammate invitations, owner-only quotes, assignment preservation during unavailable team loads, real signup CTAs, settings/template preservation and read-only handover. The standalone real-application walkthrough passed playback, six chapter seeks, 375px overflow checks and focused server-range tests.
+
+Local notification worker successfully checked the actual authenticated queue and is running every 60 seconds in session 84348. The final product browser run created fresh workspace screenshots. These services are local processes; hosted scheduling remains a launch prerequisite.

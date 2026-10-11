@@ -10,7 +10,7 @@ export function safeNext(next: string | null) {
     const url = new URL(next, 'https://clientlane.invalid');
     if (
       url.origin !== 'https://clientlane.invalid' ||
-      !['/app', '/reset'].some(
+      !['/app', '/client', '/reset'].some(
         (path) => url.pathname === path || url.pathname.startsWith(`${path}/`),
       )
     )

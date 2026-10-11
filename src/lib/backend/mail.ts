@@ -8,10 +8,11 @@ import { z } from 'zod';
 type Queue = {
   id: string;
   kind: string;
-  workspace_id: string;
+  workspace_id: string | null;
   payload: {
     grantId?: string;
     inviteId?: string;
+    accountInviteId?: string;
     projectId?: string;
     requestId?: string;
     date?: string;
@@ -58,7 +59,7 @@ function link(token: string, path = 'portal') {
 }
 export class Mail {
   constructor(public backend: Backend) {}
-  async queue(workspaceId: string, key: string, kind: string, payload: Queue['payload']) {
+  async queue(workspaceId: string | null, key: string, kind: string, payload: Queue['payload']) {
     const result = await this.backend.db
       .from('mail_queue')
       .upsert(
@@ -199,6 +200,33 @@ export class Mail {
     return { queued };
   }
   async content(job: Queue) {
+    if (job.kind === 'client-account') {
+      const r = await this.backend.db
+        .from('client_account_invites')
+        .select('*')
+        .eq('id', job.payload.accountInviteId)
+        .is('revoked_at', null)
+        .is('declined_at', null)
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+      dbError(r.error);
+      if (!r.data) return null;
+      const i = r.data;
+      const title =
+        i.direction === 'client'
+          ? (await this.backend.row(i.workspace_id)).state.projects.find(
+              (p) => p.id === i.project_id,
+            )?.title
+          : i.brief?.title;
+      if (!title) return null;
+      return {
+        to: i.email,
+        subject: `Project invitation: ${title}`,
+        text: `You have a ${i.direction === 'client' ? 'client project' : 'project brief'} invitation on Clientlane. Sign in with ${i.email}, confirm your email and review before accepting.\n${link(decryptToken(i.token_cipher), 'client/invite')}\nExpires ${i.expires_at}.`,
+      };
+    }
+    check(job.workspace_id, 'Workspace access denied');
     const row = await this.backend.row(job.workspace_id);
     if (job.kind === 'member') {
       const { data, error } = await this.backend.db
@@ -267,6 +295,7 @@ export class Mail {
   }
   async advance(job: Queue) {
     if (job.kind !== 'reminder') return;
+    check(job.workspace_id, 'Workspace access denied');
     if (!(await this.activeGrants(job.workspace_id)).some((g) => g.id === job.payload.grantId))
       return;
     for (let retry = 0; retry < 3; retry++) {
@@ -447,5 +476,23 @@ export class Mail {
       error: string | null;
       sent_at: string | null;
     };
+  }
+  async sendAccountInvite(user: string, id: string) {
+    transport();
+    const r = await this.backend.db
+      .from('client_account_invites')
+      .select('id,workspace_id')
+      .eq('id', z.uuid().parse(id))
+      .eq('sender_id', user)
+      .is('accepted_at', null)
+      .is('revoked_at', null)
+      .is('declined_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
+    dbError(r.error);
+    check(r.data, 'Pending invitation access denied.');
+    return this.queue(r.data.workspace_id, `account:${id}`, 'client-account', {
+      accountInviteId: id,
+    });
   }
 }

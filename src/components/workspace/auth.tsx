@@ -28,6 +28,7 @@ export function AuthForm({
     forgot: 'Let’s get you back in.',
     reset: 'A fresh start.',
   };
+  const clientEntry = safeNext(next).startsWith('/client');
   return (
     <div className="ws-auth">
       <header>
@@ -55,18 +56,32 @@ export function AuthForm({
         </aside>
         <section className="ws-auth-card">
           <p className="ws-eyebrow">
-            {mode === 'signup' ? 'CREATE YOUR WORKSPACE' : 'YOUR STUDIO AWAITS'}
+            {mode === 'signup'
+              ? clientEntry
+                ? 'CREATE YOUR CLIENT ACCOUNT'
+                : 'CREATE YOUR WORKSPACE'
+              : clientEntry
+                ? 'YOUR CLIENT PROJECTS AWAIT'
+                : 'YOUR STUDIO AWAITS'}
           </p>
           <h1>{titles[mode]}</h1>
           <p className="ws-muted">
             {mode === 'signup'
-              ? 'Start with an empty workspace. No payment details needed.'
+              ? clientEntry
+                ? 'Client accounts are free. Bring your existing provider or accept a project invitation.'
+                : 'Start with an empty workspace. No payment details needed.'
               : mode === 'forgot'
                 ? 'We’ll email a secure password recovery link.'
                 : mode === 'reset'
                   ? 'Choose a password with at least 10 characters.'
                   : 'Sign in to pick up where you left off.'}
           </p>
+          {mode === 'signup' && (
+            <nav className="ws-auth-links" aria-label="Choose account entry">
+              <Link href="/signup?next=/app">I’m a freelancer or agency</Link>
+              <Link href="/signup?next=/client">I’m a client</Link>
+            </nav>
+          )}
           <form
             method="post"
             onSubmit={async (e) => {
@@ -182,6 +197,12 @@ export function AuthForm({
             )}
           </div>
           <p className="ws-muted">
+            {mode === 'login' && (
+              <>
+                <Link href="/login?next=/client">Sign in to client projects</Link>
+                <br />
+              </>
+            )}
             Explore first? <Link href="/demo">Try the interactive demo</Link>.
           </p>
         </section>

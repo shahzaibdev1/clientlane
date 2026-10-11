@@ -6,14 +6,30 @@ import type { Command } from '@/lib/domain';
 import { ProjectBoard } from './project';
 import { Button, FormDialog, type FormSpec } from './forms';
 import './workspace.css';
+import { loadClientProject, mutateClientProject } from '@/lib/backend/client-account-actions';
+import type { ClientProjectView } from '@/lib/backend/client-accounts';
+import { AccountHeader } from '../client-account/accounts';
 type PortalData = Extract<Awaited<ReturnType<typeof loadPortal>>, { ok: true }>['data'];
-export function Portal({ initial, token }: { initial: PortalData; token: string }) {
+export function Portal({
+  initial,
+  token,
+  account,
+}: {
+  initial: PortalData | ClientProjectView;
+  token?: string;
+  account?: { workspaceId: string; projectId: string };
+}) {
   const [view, setView] = useState(initial),
     [modal, setModal] = useState<FormSpec | null>(null),
     [error, setError] = useState(''),
     [success, setSuccess] = useState(''),
     [busy, setBusy] = useState(false);
   const openForm = (spec: FormSpec) => setModal(spec);
+  const context = account
+    ? { ...account, clientAccount: true }
+    : { token, projectId: view.project.id };
+  const reload = () =>
+    account ? loadClientProject(account.workspaceId, account.projectId) : loadPortal(token!);
   const viewRef = useRef(view);
   useEffect(() => {
     viewRef.current = view;
@@ -23,10 +39,15 @@ export function Portal({ initial, token }: { initial: PortalData; token: string 
     setError('');
     setSuccess('');
     try {
-      const result = await mutatePortal(token, { version: viewRef.current.version, command: c });
+      const result = await (account
+        ? mutateClientProject(account.workspaceId, account.projectId, {
+            version: viewRef.current.version,
+            command: c,
+          })
+        : mutatePortal(token!, { version: viewRef.current.version, command: c }));
       if (!result.ok) {
         if (/reload|version|changed/i.test(result.error)) {
-          const latest = await loadPortal(token);
+          const latest = await reload();
           if (latest.ok) setView(latest.data);
         }
         throw new Error(result.error);
@@ -44,6 +65,7 @@ export function Portal({ initial, token }: { initial: PortalData; token: string 
   }
   return (
     <div className="ws-portal">
+      {account && <AccountHeader />}
       <header className="ws-portal-header">
         <div className="ws-portal-brand">
           {view.settings.logoUrl ? (
@@ -74,7 +96,7 @@ export function Portal({ initial, token }: { initial: PortalData; token: string 
               onClick={async () => {
                 setBusy(true);
                 try {
-                  const result = await loadPortal(token);
+                  const result = await reload();
                   if (result.ok) {
                     setView(result.data);
                     setError('');
@@ -95,22 +117,19 @@ export function Portal({ initial, token }: { initial: PortalData; token: string 
           project={view.project}
           client
           currency={view.settings.currency}
-          context={{ token, projectId: view.project.id }}
+          context={context}
           onCommand={command}
           openForm={openForm}
         />
-        <p className="ws-muted">
-          Access expires {new Date(view.expiresAt).toLocaleDateString('en-US', { timeZone: 'UTC' })}
-          . Keep this private link for your project.
-        </p>
+        {'expiresAt' in view && (
+          <p className="ws-muted">
+            Access expires{' '}
+            {new Date(view.expiresAt).toLocaleDateString('en-US', { timeZone: 'UTC' })}. Keep this
+            private link for your project.
+          </p>
+        )}
       </main>
-      {modal && (
-        <FormDialog
-          spec={modal}
-          onClose={() => setModal(null)}
-          context={{ token, projectId: view.project.id }}
-        />
-      )}
+      {modal && <FormDialog spec={modal} onClose={() => setModal(null)} context={context} />}
     </div>
   );
 }

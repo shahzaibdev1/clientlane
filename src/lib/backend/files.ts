@@ -2,6 +2,7 @@ import type { Backend } from './service';
 import { check, dbError } from './service';
 import { randomUUID } from 'node:crypto';
 import { fileRefSchema, portalProject, type Project, type FileRef } from '../domain';
+import { ClientAccounts } from './client-accounts';
 const bucket = 'clientlane-private';
 const extensions: Record<string, readonly string[]> = {
   'image/png': ['png'],
@@ -49,7 +50,7 @@ export async function readUpload(request: Request) {
     headers: { 'Content-Type': request.headers.get('content-type') ?? '' },
   }).formData();
 }
-type FileActor = { userId?: string; token?: string; workspaceId?: string };
+type FileActor = { userId?: string; token?: string; workspaceId?: string; clientAccount?: boolean };
 function references(project: Pick<Project, 'requests' | 'deliveries'>): FileRef[] {
   return [
     ...project.requests.flatMap((r) => [
@@ -103,6 +104,15 @@ export class Files {
       return { row, grant };
     }
     check(actor.userId, 'Sign in to access files.');
+    if (actor.clientAccount) {
+      check(workspaceId ?? actor.workspaceId, 'Client project access denied.');
+      const access = await new ClientAccounts(this.backend).access(
+        actor.userId,
+        (workspaceId ?? actor.workspaceId)!,
+        projectId,
+      );
+      return { row: access.row, grant: null, clientAccessId: access.accessId };
+    }
     const view = await this.backend.loadWorkspace(actor.userId, workspaceId ?? actor.workspaceId);
     check(view.projectIds.includes(projectId), 'File access denied');
     return { row: await this.backend.row(view.state.workspaceId), grant: null };
@@ -118,7 +128,7 @@ export class Files {
       ),
       'Unsupported file name.',
     );
-    const { row, grant } = await this.access(actor, projectId),
+    const { row, grant, clientAccessId } = await this.access(actor, projectId),
       project = row.state.projects.find((p) => p.id === projectId);
     check(project && !project.archived, 'Choose an active project.');
     const parsed = fileRefSchema.parse({
@@ -144,6 +154,7 @@ export class Files {
       type: parsed.type,
       uploader_id: actor.userId ?? null,
       grant_id: grant?.id ?? null,
+      client_access_id: clientAccessId ?? null,
     });
     if (registry.error) {
       await this.backend.db.storage.from(bucket).remove([parsed.path]);
@@ -163,7 +174,7 @@ export class Files {
     const { row, grant } = await this.access(actor, data.project_id, data.workspace_id),
       project = row.state.projects.find((p) => p.id === data.project_id);
     check(project, 'File access denied');
-    if (grant)
+    if (grant || actor.clientAccount)
       check(
         references(portalProject(project)).some((f) => f.kind === 'upload' && f.path === path),
         'File is not public in this portal.',

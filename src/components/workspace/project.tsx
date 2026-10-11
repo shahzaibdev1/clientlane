@@ -177,7 +177,11 @@ export function ProjectBoard(props: ProjectProps) {
           {r.response && (
             <div className="ws-response">
               <p>{r.response.text}</p>
-              <FileLinks files={r.response.files} token={context.token} />
+              <FileLinks
+                files={r.response.files}
+                token={context.token}
+                clientAccount={context.clientAccount}
+              />
               <small>
                 {authorName(r.response.author)} · {stamp(r.response.submittedAt)}
               </small>
@@ -191,7 +195,11 @@ export function ProjectBoard(props: ProjectProps) {
                 {r.responseHistory.map((h, i) => (
                   <div className="ws-response" key={i}>
                     <p>{h.text}</p>
-                    <FileLinks files={h.files} token={context.token} />
+                    <FileLinks
+                      files={h.files}
+                      token={context.token}
+                      clientAccount={context.clientAccount}
+                    />
                     <small>
                       {authorName(h.author)} · {stamp(h.submittedAt)}
                     </small>
@@ -557,6 +565,7 @@ export function ProjectBoard(props: ProjectProps) {
                 client={client}
                 readonly={readOnly}
                 token={context.token}
+                clientAccount={context.clientAccount}
                 onCommand={onCommand}
                 openForm={openForm}
                 publish={() => publish(d)}
@@ -913,7 +922,11 @@ export function ProjectBoard(props: ProjectProps) {
                 <p className="ws-eyebrow">APPROVED · VERSION {d.versions.at(-1)?.number}</p>
                 <h3>{d.title}</h3>
                 <p>{d.versions.at(-1)?.note}</p>
-                <FileLinks files={d.versions.at(-1)!.files} token={context.token} />
+                <FileLinks
+                  files={d.versions.at(-1)!.files}
+                  token={context.token}
+                  clientAccount={context.clientAccount}
+                />
               </section>
             ))}
           {!p.deliveries.some((d) => d.versions.at(-1)?.decision?.value === 'approved') && (
@@ -939,6 +952,7 @@ function DeliveryCard({
   client,
   readonly,
   token,
+  clientAccount,
   onCommand,
   openForm,
   publish,
@@ -948,6 +962,7 @@ function DeliveryCard({
   client: boolean;
   readonly: boolean;
   token?: string;
+  clientAccount?: boolean;
   onCommand: (c: Command) => Promise<boolean>;
   openForm: (s: FormSpec) => void;
   publish: () => void;
@@ -1008,7 +1023,7 @@ function DeliveryCard({
         </label>
       </div>
       <p className="ws-delivery-note">{v.note}</p>
-      <FileLinks files={v.files} token={token} />
+      <FileLinks files={v.files} token={token} clientAccount={clientAccount} />
       <p className="ws-muted">
         Published {stamp(v.publishedAt)} · {authorName(v.publishedBy)}
       </p>

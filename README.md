@@ -25,6 +25,16 @@ No public deployment, search ranking, marketplace partnership, or measured custo
 
 Client project links are bearer credentials: anyone who possesses an active link can act within that project. Approval records identify the named recipient associated with the link; they are not identity verification or digital signatures. Revoke a link when access should end. Internal notes stay separate from portal content.
 
+## Optional client accounts
+
+Clients can choose the client entry on `/signup` or sign in at `/login?next=/client`. Client accounts are free and list accepted projects across existing freelancers and agencies. A studio owner opens a project and selects **Invite client account** to create a seven-day invitation for that project's current client email. Preview/copy works without SMTP; **Send invitation email** uses the existing configured queue. The recipient must sign in with the confirmed invited email and accept before account access exists.
+
+A client can select **Invite your provider** on `/client`, enter their existing provider's email and a project brief, then copy or send the invitation. The provider reviews and accepts using that confirmed email. Acceptance creates the project and client together in their owner workspace and links the originating client's account; repeated acceptance does not create duplicates. Pending briefs grant no studio access. Recipients may decline and senders may revoke pending invitations.
+
+Accepted clients can respond/upload, leave version feedback, approve or request revisions, request extra work, accept quotes/deadlines and open/export handover using the same client-only project view as a private link. Internal notes and studio/team controls stay private. One account can use both **My client projects** and **Studio workspace**; navigation never grants permissions. Owners revoke account access independently from private links. Revocation blocks all earlier account invitations for that project, while a fresh owner invitation can restore access deliberately. Project deletion/replacement and changing the client email invalidate existing relationships instead of transferring them to someone else.
+
+The additive `202610110002_client_accounts.sql` migration is required. Existing installations must apply only unapplied migrations; preserve existing data and environment secrets. Account routes are private/no-store/noindex and suppress referrers. Confirmed email ownership does not imply verified real-world identity or a digital signature. There is no marketplace, billing setup or payment processing.
+
 ## Verification
 
 `npm test` runs domain/unit tests. `npm run test:integration` requires local Supabase. `npm run lint`, `npm run typecheck`, and `npm run build` cover static and production compilation. `npm run test:e2e` checks Chromium workflows. Use `PLAYWRIGHT_SERVER=production` for the production browser suite after building. See docs/VALIDATION.md for the actual final evidence and limits.

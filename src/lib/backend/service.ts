@@ -122,7 +122,12 @@ export class Backend {
       })),
     };
   }
-  async validateCommand(row: Row, command: ReturnType<typeof commandSchema.parse>, actor: Actor) {
+  async validateCommand(
+    row: Row,
+    command: ReturnType<typeof commandSchema.parse>,
+    actor: Actor,
+    clientAccessId?: string,
+  ) {
     if ('assigneeId' in command && command.assigneeId) {
       const result = await this.db
         .from('memberships')
@@ -158,7 +163,11 @@ export class Backend {
             'File metadata does not match uploaded bytes.',
           );
           if (actor.role === 'client')
-            check(result.data.grant_id !== null, 'Client can only submit their uploaded files.');
+            check(
+              result.data.grant_id !== null ||
+                (clientAccessId && result.data.client_access_id === clientAccessId),
+              'Client can only submit their uploaded files.',
+            );
         }
   }
   async save(

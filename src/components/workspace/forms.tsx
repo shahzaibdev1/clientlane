@@ -31,6 +31,7 @@ export type FileContext = {
   projectId?: string;
   workspaceId?: string;
   token?: string;
+  clientAccount?: boolean;
 };
 export const uid = () => crypto.randomUUID();
 export const dateValue = (value: string) => value || null;
@@ -101,7 +102,15 @@ export function Input({ field }: { field: Field }) {
     </label>
   );
 }
-export function FileLinks({ files, token }: { files: FileRef[]; token?: string }) {
+export function FileLinks({
+  files,
+  token,
+  clientAccount,
+}: {
+  files: FileRef[];
+  token?: string;
+  clientAccount?: boolean;
+}) {
   return (
     <div className="ws-files">
       {files.map((f, i) => (
@@ -110,7 +119,7 @@ export function FileLinks({ files, token }: { files: FileRef[]; token?: string }
           href={
             f.kind === 'link'
               ? f.url
-              : `/api/files?path=${encodeURIComponent(f.path)}${token ? `&token=${encodeURIComponent(token)}` : ''}`
+              : `/api/files?path=${encodeURIComponent(f.path)}${token ? `&token=${encodeURIComponent(token)}` : ''}${clientAccount ? '&clientAccount=true' : ''}`
           }
           target={f.kind === 'link' ? '_blank' : undefined}
           rel="noreferrer"
@@ -169,6 +178,7 @@ export function FormDialog({
       form.append('projectId', context.projectId ?? '');
       if (context.workspaceId) form.append('workspaceId', context.workspaceId);
       if (context.token) form.append('token', context.token);
+      if (context.clientAccount) form.append('clientAccount', 'true');
       const response = await fetch('/api/files', { method: 'POST', body: form });
       const result = await response.json();
       if (!result.ok) throw new Error(result.error);

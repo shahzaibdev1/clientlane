@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { ProjectAccountControls } from '../client-account/accounts';
 import { z } from 'zod';
 import {
   Layers,
@@ -711,27 +712,32 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
               Reset demo
             </button>
           ) : (
-            <button
-              className="ws-logout"
-              disabled={busy}
-              onClick={() =>
-                void external(
-                  async () => {
-                    const r = await createBrowserSupabase().auth.signOut();
-                    return r.error
-                      ? { ok: false, error: r.error.message }
-                      : { ok: true, data: true };
-                  },
-                  () => {
-                    window.location.assign('/login');
-                    return 'Signed out.';
-                  },
-                )
-              }
-            >
-              <LogOut size={16} />
-              Sign out
-            </button>
+            <>
+              <Link href="/client" className="ws-logout">
+                My client projects
+              </Link>
+              <button
+                className="ws-logout"
+                disabled={busy}
+                onClick={() =>
+                  void external(
+                    async () => {
+                      const r = await createBrowserSupabase().auth.signOut();
+                      return r.error
+                        ? { ok: false, error: r.error.message }
+                        : { ok: true, data: true };
+                    },
+                    () => {
+                      window.location.assign('/login');
+                      return 'Signed out.';
+                    },
+                  )
+                }
+              >
+                <LogOut size={16} />
+                Sign out
+              </button>
+            </>
           )}
         </div>
       </aside>
@@ -835,6 +841,13 @@ export function Workspace({ initial, demo = false }: { initial?: WorkspaceView; 
               />
               {owner && !preview && (
                 <div className="ws-project-admin">
+                  {!demo && (
+                    <ProjectAccountControls
+                      key={`${state.workspaceId}/${project.id}`}
+                      workspaceId={state.workspaceId}
+                      projectId={project.id}
+                    />
+                  )}
                   {portalLink && (
                     <section className="ws-card ws-share">
                       <h3>Your secure client link</h3>

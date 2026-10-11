@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
       file = body.get('file'),
       projectId = body.get('projectId'),
       token = body.get('token'),
-      workspaceId = body.get('workspaceId');
+      workspaceId = body.get('workspaceId'),
+      clientAccount = body.get('clientAccount') === 'true';
     if (
       !(file instanceof File) ||
       typeof projectId !== 'string' ||
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       throw new Error('Choose a file and project.');
     const actor = token
       ? { token }
-      : { userId: (await requireUser()).id, workspaceId: workspaceId ?? undefined };
+      : { userId: (await requireUser()).id, workspaceId: workspaceId ?? undefined, clientAccount };
     const ref = await new Files(createBackend()).upload(actor, projectId, file);
     return NextResponse.json({ ok: true, data: ref }, { headers });
   } catch (error) {
@@ -39,7 +40,12 @@ export async function GET(request: NextRequest) {
     const path = request.nextUrl.searchParams.get('path'),
       token = request.nextUrl.searchParams.get('token');
     if (!path) throw new Error('Choose a file.');
-    const actor = token ? { token } : { userId: (await requireUser()).id };
+    const actor = token
+      ? { token }
+      : {
+          userId: (await requireUser()).id,
+          clientAccount: request.nextUrl.searchParams.get('clientAccount') === 'true',
+        };
     const service = new Files(createBackend()),
       metadata = await service.metadata(actor, path),
       blob = await service.download(actor, path);
